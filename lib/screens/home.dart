@@ -1,10 +1,8 @@
-import 'dart:convert';
-
 import 'package:atc_kw/cart_bloc.dart';
-import 'package:atc_kw/screens/cart.dart';
 import 'package:atc_kw/screens/items.dart';
 import 'package:atc_kw/screens/searchpage.dart';
-import 'package:badges/badges.dart';
+import 'package:atc_kw/widgets/customDialog.dart';
+import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
@@ -24,23 +22,65 @@ class _HomeState extends State<Home>
   void initState() {
     super.initState();
     initSlangRetailAssistant();
+    SearchUserJourney.disablePreserveContext();
     SlangRetailAssistant.getUI().showTrigger();
+  }
+
+  bool? searchforItem(String? searchItem) {
+    for (int i = 0; i < items.length; i++) {
+      return items[i]['name'].toString().toLowerCase() ==
+          (searchItem.toString().trim());
+    }
   }
 
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
+    _searchUserJourney = searchUserJourney;
     String? searchItem = searchInfo.item?.description;
-    print(searchItem);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SearchPage(
-            searchItem: searchItem,
-          ),
-        ));
-    searchUserJourney.setSuccess();
-    return SearchAppState.SEARCH_RESULTS;
+    print(searchInfo.isAddToCart);
+    print(searchInfo.item?.size);
+    print(searchItem.toString().trim());
+    if (items
+            .where((item) => item['name']
+                .toString()
+                .toLowerCase()
+                .contains(searchItem.toString().trim()))
+            .toList()
+            .length !=
+        0) {
+      if (searchInfo.isAddToCart &&
+          items
+                  .where((item) => item['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(searchItem.toString().trim()))
+                  .toList()
+                  .length ==
+              1) {
+        cartbloc.addToCart(items
+            .where((item) => item['name']
+                .toString()
+                .toLowerCase()
+                .contains(searchItem.toString().trim()))
+            .toList()[0]);
+        addToCartDialog(context, _searchUserJourney);
+      } else {
+        searchUserJourney.setNeedDisambiguation();
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SearchPage(
+                searchItem: searchItem.toString().trim(),
+                searchUserJourney: searchUserJourney,
+              ),
+            ));
+      }
+    } else {
+      _showMyDialog();
+    }
+
+    return SearchAppState.WAITING;
   }
 
   void initSlangRetailAssistant() {
@@ -55,57 +95,7 @@ class _HomeState extends State<Home>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Home",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        leading: IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.menu),
-        ),
-        elevation: 0.0,
-        centerTitle: true,
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Cart(),
-                    ));
-              },
-              icon: StreamBuilder<Object>(
-                  stream: cartbloc.cartItems,
-                  builder: (context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData) {
-                      return Badge(
-                        badgeContent: Text(
-                          snapshot.data.length.toString(),
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.shopping_cart,
-                          color: Colors.black,
-                        ),
-                      );
-                    }
-                    return Badge(
-                      badgeContent: Text(
-                        '0',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.shopping_cart,
-                      ),
-                    );
-                  }))
-        ],
-      ),
+      appBar: customAppbar(context),
       body: ListView.builder(
           itemCount: items.length,
           padding: EdgeInsets.symmetric(horizontal: 12),
@@ -159,6 +149,7 @@ class _HomeState extends State<Home>
 
   @override
   void onAssistantInvoked() {
+    // SearchUserJourney.getContext().clear();
     print("onAssistantInvoked");
   }
 
@@ -190,5 +181,27 @@ class _HomeState extends State<Home>
   @override
   void onAssistantError(Map<String, String> assistantError) {
     print("AssistantError " + assistantError.toString());
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+            elevation: 24.0,
+            title: Text('Could Not Find Item'),
+            content: SingleChildScrollView(
+                child: ElevatedButton(
+              child: Text('OK'),
+              onPressed: () {
+                _searchUserJourney?.setItemNotSpecified();
+                _searchUserJourney
+                    ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+                Navigator.of(context).pop();
+              },
+            )));
+      },
+    );
   }
 }

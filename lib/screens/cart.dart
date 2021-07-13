@@ -56,7 +56,7 @@ class Cart extends StatelessWidget {
                     );
                   });
             }
-            return Center(child: CircularProgressIndicator());
+            return Center(child: Text("No Items to show..."));
           }),
     );
   }
