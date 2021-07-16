@@ -41,12 +41,12 @@ class _SearchPageState extends State<SearchPage>
     } else if (widget.isAddToCart == true && widget.itemList!.length > 1) {
       widget.searchUserJourney?.setNeedDisambiguation();
       widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      // var items = manyItemsDetected(widget.itemList, searchQuery);
       if (searchQuery != null) {
         widget.searchUserJourney?.setSuccess();
         widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
       } else {
         widget.searchUserJourney?.setFailure();
+        // widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
       }
     } else {
       widget.searchUserJourney?.setFailure();
@@ -57,6 +57,7 @@ class _SearchPageState extends State<SearchPage>
   @override
   void initState() {
     searchAction();
+    SlangRetailAssistant.setAction(this);
     super.initState();
   }
 
@@ -155,8 +156,7 @@ class _SearchPageState extends State<SearchPage>
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     var items = manyItemsDetected(widget.itemList, searchInfo);
     cartbloc.addToCart(items[0]);
-    searchUserJourney.setSuccess();
-    return SearchAppState.ADD_TO_CART;
+    return SearchAppState.WAITING;
   }
 
   @override
