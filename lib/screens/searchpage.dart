@@ -5,11 +5,15 @@ import 'package:atc_kw/screens/items.dart';
 import '../cart_bloc.dart';
 
 class SearchPage extends StatefulWidget {
-  final String? searchItem;
+  final List? itemList;
   final SearchUserJourney? searchUserJourney;
+  bool? isAddToCart;
+  final SearchInfo? searchInfo;
   SearchPage({
     Key? key,
-    this.searchItem,
+    this.itemList,
+    this.isAddToCart,
+    this.searchInfo,
     this.searchUserJourney,
   }) : super(key: key);
 
@@ -19,42 +23,40 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage>
     implements RetailAssistantAction, RetailAssistantLifeCycleObserver {
-  List<Map<String, dynamic>> searchItems = [];
-
-  void searchforItem() {
-    setState(() {
-      searchItems = items
-          .where((item) => item['name']
-              .toString()
-              .toLowerCase()
-              .contains(widget.searchItem.toString()))
-          .toList();
-    });
-    print(searchItems);
-    widget.searchUserJourney?.setItemNotSpecified();
-    widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+  SearchInfo? searchQuery;
+  void searchAction() {
+    if (widget.isAddToCart == false) {
+      widget.searchUserJourney?.setSuccess();
+      widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    } else {
+      addToCartFlow();
+    }
   }
 
-  searchItemSpecific(String? quantity) {
-    var item = items
-        .where((element) => element['quantity']
-            .toString()
-            .toLowerCase()
-            .contains(quantity.toString()))
-        .toList()[0];
-    if (item.length != 0) {
-      cartbloc.addToCart(item);
+  addToCartFlow() {
+    if (widget.isAddToCart == true && widget.itemList!.length == 1) {
+      cartbloc.addToCart(widget.itemList![0]);
       widget.searchUserJourney?.setSuccess();
       widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    } else if (widget.isAddToCart == true && widget.itemList!.length > 1) {
+      widget.searchUserJourney?.setNeedDisambiguation();
+      widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+      // var items = manyItemsDetected(widget.itemList, searchQuery);
+      if (searchQuery != null) {
+        widget.searchUserJourney?.setSuccess();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+      } else {
+        widget.searchUserJourney?.setFailure();
+      }
     } else {
-      widget.searchUserJourney?.setItemNotFound();
+      widget.searchUserJourney?.setFailure();
       widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
     }
   }
 
   @override
   void initState() {
-    searchforItem();
+    searchAction();
     super.initState();
   }
 
@@ -63,7 +65,7 @@ class _SearchPageState extends State<SearchPage>
     return Scaffold(
       appBar: customAppbar(context),
       body: ListView.builder(
-          itemCount: searchItems.length,
+          itemCount: widget.itemList?.length,
           padding: EdgeInsets.symmetric(horizontal: 12),
           itemBuilder: (context, index) {
             return Padding(
@@ -80,15 +82,15 @@ class _SearchPageState extends State<SearchPage>
                   color: Colors.black,
                 ),
                 title: Text(
-                  searchItems[index]['name'].toString(),
+                  widget.itemList![index]['name'].toString(),
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "${searchItems[index]['quantity'].toString()}, ${searchItems[index]['price'].toString()}",
+                  "${widget.itemList![index]['quantity'].toString()}, ${widget.itemList![index]['price'].toString()}",
                 ),
                 trailing: IconButton(
                     onPressed: () {
-                      cartbloc.addToCart(searchItems[index]);
+                      cartbloc.addToCart(widget.itemList![index]);
                       print(cartbloc.cartItems.value);
                     },
                     icon: Icon(Icons.shopping_cart)),
@@ -96,6 +98,16 @@ class _SearchPageState extends State<SearchPage>
             );
           }),
     );
+  }
+
+  manyItemsDetected(List? items, SearchInfo? searchInfo) {
+    List itemList = items!
+        .where((item) => item['quantity']
+            .toString()
+            .toLowerCase()
+            .contains(searchInfo!.item!.size.toString().trim()))
+        .toList();
+    return itemList;
   }
 
   @override
@@ -141,7 +153,10 @@ class _SearchPageState extends State<SearchPage>
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
-    return searchItemSpecific(searchInfo.item?.quantity.toString());
+    var items = manyItemsDetected(widget.itemList, searchInfo);
+    cartbloc.addToCart(items[0]);
+    searchUserJourney.setSuccess();
+    return SearchAppState.ADD_TO_CART;
   }
 
   @override

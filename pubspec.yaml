@@ -25,6 +25,7 @@ dependencies:
     sdk: flutter
   badges: ^2.0.1
   cupertino_icons: ^1.0.2
+  get: ^4.1.4
   rxdart: ^0.27.1
   slang_retail_assistant: ^4.2.2
 

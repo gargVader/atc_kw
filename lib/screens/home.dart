@@ -4,6 +4,7 @@ import 'package:atc_kw/screens/searchpage.dart';
 import 'package:atc_kw/widgets/customDialog.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 class Home extends StatefulWidget {
@@ -38,46 +39,21 @@ class _HomeState extends State<Home>
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     _searchUserJourney = searchUserJourney;
     String? searchItem = searchInfo.item?.description;
-    print(searchInfo.isAddToCart);
-    print(searchInfo.item?.size);
-    print(searchItem.toString().trim());
-    if (items
-            .where((item) => item['name']
-                .toString()
-                .toLowerCase()
-                .contains(searchItem.toString().trim()))
-            .toList()
-            .length !=
-        0) {
-      if (searchInfo.isAddToCart &&
-          items
-                  .where((item) => item['name']
-                      .toString()
-                      .toLowerCase()
-                      .contains(searchItem.toString().trim()))
-                  .toList()
-                  .length ==
-              1) {
-        cartbloc.addToCart(items
-            .where((item) => item['name']
-                .toString()
-                .toLowerCase()
-                .contains(searchItem.toString().trim()))
-            .toList()[0]);
-        addToCartDialog(context, _searchUserJourney);
-      } else {
-        searchUserJourney.setNeedDisambiguation();
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SearchPage(
-                searchItem: searchItem.toString().trim(),
-                searchUserJourney: searchUserJourney,
-              ),
-            ));
-      }
+    List itemList = items
+        .where((item) => item['name']
+            .toString()
+            .toLowerCase()
+            .contains(searchItem.toString().trim()))
+        .toList();
+    if (itemList.length != 0) {
+      Get.to(SearchPage(
+        itemList: itemList,
+        searchUserJourney: searchUserJourney,
+        searchInfo: searchInfo,
+        isAddToCart: searchInfo.isAddToCart,
+      ));
     } else {
-      _showMyDialog();
+      itemNotFound();
     }
 
     return SearchAppState.WAITING;
@@ -183,25 +159,10 @@ class _HomeState extends State<Home>
     print("AssistantError " + assistantError.toString());
   }
 
-  Future<void> _showMyDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-            elevation: 24.0,
-            title: Text('Could Not Find Item'),
-            content: SingleChildScrollView(
-                child: ElevatedButton(
-              child: Text('OK'),
-              onPressed: () {
-                _searchUserJourney?.setItemNotSpecified();
-                _searchUserJourney
-                    ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-                Navigator.of(context).pop();
-              },
-            )));
-      },
-    );
+  Future<void> itemNotFound() async {
+    _searchUserJourney?.setItemNotFound();
+    _searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
   }
+
+  // Future<void> searchItem() {}
 }
