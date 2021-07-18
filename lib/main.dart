@@ -6,6 +6,8 @@ void main() {
   runApp(App());
 }
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
 
@@ -14,6 +16,7 @@ class App extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: Home(),
+      navigatorObservers: [routeObserver],
       theme: ThemeData(
         primaryColor: Colors.white,
         scaffoldBackgroundColor: Colors.white,

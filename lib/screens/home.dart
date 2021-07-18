@@ -6,8 +6,12 @@ import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
+import 'package:atc_kw/screens/cart.dart';
+
+import '../main.dart';
 
 class Home extends StatefulWidget {
+
   const Home({Key? key}) : super(key: key);
 
   @override
@@ -15,7 +19,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home>
-    implements RetailAssistantAction, RetailAssistantLifeCycleObserver {
+    implements RetailAssistantAction, RetailAssistantLifeCycleObserver, RouteAware {
   String _searchText = '';
   SearchUserJourney? _searchUserJourney;
 
@@ -98,8 +102,13 @@ class _HomeState extends State<Home>
                 ),
                 trailing: IconButton(
                     onPressed: () {
-                      cartbloc.addToCart(items[index]);
-                      print(cartbloc.cartItems.value);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Cart(),
+                          ));
+                      // cartbloc.addToCart(items[index]);
+                      // print(cartbloc.cartItems.value);
                     },
                     icon: Icon(Icons.shopping_cart)),
               ),
@@ -162,6 +171,33 @@ class _HomeState extends State<Home>
   Future<void> itemNotFound() async {
     _searchUserJourney?.setItemNotFound();
     _searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void didPop() {
+    // TODO: implement didPop
+  }
+
+  @override
+  void didPush() {
+    // TODO: implement didPush
+  }
+
+  @override
+  void didPushNext() {
+    // TODO: implement didPushNext
+  }
+
+  @override
+  void didPopNext() {
+    // TODO: implement didPopNext
+    SlangRetailAssistant.setAction(this);
   }
 
   // Future<void> searchItem() {}
