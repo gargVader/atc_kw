@@ -102,11 +102,12 @@ class _SearchPageState extends State<SearchPage>
   }
 
   manyItemsDetected(List? items, SearchInfo? searchInfo) {
+    String sizeString = searchInfo!.item!.size.toString();
     List itemList = items!
         .where((item) => item['quantity']
             .toString()
             .toLowerCase()
-            .contains(searchInfo!.item!.size.toString().trim()))
+            .contains(sizeString))
         .toList();
     return itemList;
   }
@@ -156,7 +157,8 @@ class _SearchPageState extends State<SearchPage>
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     var items = manyItemsDetected(widget.itemList, searchInfo);
     cartbloc.addToCart(items[0]);
-    return SearchAppState.WAITING;
+    searchUserJourney.setSuccess();
+    return SearchAppState.ADD_TO_CART;
   }
 
   @override

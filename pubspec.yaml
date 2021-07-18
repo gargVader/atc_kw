@@ -27,7 +27,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.1.4
   rxdart: ^0.27.1
-  slang_retail_assistant: ^4.2.2
+  slang_retail_assistant: ^4.2.3
 
 dev_dependencies:
   flutter_test:
