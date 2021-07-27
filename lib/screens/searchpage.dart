@@ -41,13 +41,6 @@ class _SearchPageState extends State<SearchPage>
     } else if (widget.isAddToCart == true && widget.itemList!.length > 1) {
       widget.searchUserJourney?.setNeedDisambiguation();
       widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      if (searchQuery != null) {
-        widget.searchUserJourney?.setSuccess();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      } else {
-        widget.searchUserJourney?.setFailure();
-        // widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      }
     } else {
       widget.searchUserJourney?.setFailure();
       widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
@@ -104,10 +97,8 @@ class _SearchPageState extends State<SearchPage>
   manyItemsDetected(List? items, SearchInfo? searchInfo) {
     String sizeString = searchInfo!.item!.size.toString();
     List itemList = items!
-        .where((item) => item['quantity']
-            .toString()
-            .toLowerCase()
-            .contains(sizeString))
+        .where((item) =>
+            item['quantity'].toString().toLowerCase().contains(sizeString))
         .toList();
     return itemList;
   }
@@ -156,8 +147,12 @@ class _SearchPageState extends State<SearchPage>
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     var items = manyItemsDetected(widget.itemList, searchInfo);
-    cartbloc.addToCart(items[0]);
-    searchUserJourney.setSuccess();
+    if (items.length >= 1) {
+      cartbloc.addToCart(items[0]);
+      searchUserJourney.setSuccess();
+    } else {
+      searchUserJourney.setItemNotFound();
+    }
     return SearchAppState.ADD_TO_CART;
   }
 

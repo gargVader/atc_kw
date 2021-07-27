@@ -11,7 +11,6 @@ import 'package:atc_kw/screens/cart.dart';
 import '../main.dart';
 
 class Home extends StatefulWidget {
-
   const Home({Key? key}) : super(key: key);
 
   @override
@@ -19,7 +18,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home>
-    implements RetailAssistantAction, RetailAssistantLifeCycleObserver, RouteAware {
+    implements
+        RetailAssistantAction,
+        RetailAssistantLifeCycleObserver,
+        RouteAware {
   String _searchText = '';
   SearchUserJourney? _searchUserJourney;
 
@@ -43,12 +45,20 @@ class _HomeState extends State<Home>
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     _searchUserJourney = searchUserJourney;
     String? searchItem = searchInfo.item?.description;
+    String? itemSize = searchInfo.item?.size.toString();
+    // print("Size = $itemSize");
     List itemList = items
         .where((item) => item['name']
             .toString()
             .toLowerCase()
             .contains(searchItem.toString().trim()))
         .toList();
+    if (itemSize!.contains("kg")) {
+      itemList = itemList
+          .where((item) =>
+              item['quantity'].toString().toLowerCase().contains(itemSize))
+          .toList();
+    }
     if (itemList.length != 0) {
       Get.to(SearchPage(
         itemList: itemList,

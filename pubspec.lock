@@ -120,7 +120,7 @@ packages:
       name: slang_retail_assistant
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.2.2"
+    version: "4.2.3"
   source_span:
     dependency: transitive
     description:
