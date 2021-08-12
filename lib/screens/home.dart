@@ -1,12 +1,13 @@
-import 'package:atc_kw/cart_bloc.dart';
+import 'dart:convert';
+
+import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/screens/items.dart';
 import 'package:atc_kw/screens/searchpage.dart';
-import 'package:atc_kw/widgets/customDialog.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
+import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
-import 'package:atc_kw/screens/cart.dart';
 
 import '../main.dart';
 
@@ -85,46 +86,33 @@ class _HomeState extends State<Home>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppbar(context),
-      body: ListView.builder(
-          itemCount: items.length,
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: ListTile(
-                tileColor: Colors.grey[200],
-                contentPadding: EdgeInsets.all(10),
-                minVerticalPadding: 4,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
-                key: Key(index.toString()),
-                leading: Icon(
-                  Icons.store,
-                  color: Colors.black,
-                ),
-                title: Text(
-                  items[index]['name'].toString(),
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  "${items[index]['quantity'].toString()}, ${items[index]['price'].toString()}",
-                ),
-                trailing: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Cart(),
-                          ));
-                      // cartbloc.addToCart(items[index]);
-                      // print(cartbloc.cartItems.value);
-                    },
-                    icon: Icon(Icons.shopping_cart)),
-              ),
-            );
-          }),
-    );
+        appBar: customAppbar(context),
+        body: FutureBuilder(
+          future: DefaultAssetBundle.of(context).loadString('assets/list.json'),
+          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            var itemList = json.decode(snapshot.data.toString());
+            return ListView.builder(
+                itemCount: itemList == null ? 0 : itemList.length,
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                itemBuilder: (context, index) {
+                  return RetailItem(getProduct(itemList[index]));
+                });
+          },
+        ));
+  }
+
+  Product getProduct(var productMap) {
+    final int id = productMap['id'];
+    final String name = productMap['name'];
+    final String synonyms = productMap['synonyms'];
+    final String brand = productMap['brand'];
+    final double price = double.parse((productMap['price']).toString());
+    final int sizeInt = productMap['sizeInt'];
+    final String size = productMap['size'];
+    final String unit = productMap['unit'];
+    final String imageUrl = productMap['imageUrl'];
+    return Product(
+        id, name, synonyms, brand, price, sizeInt, size, unit, imageUrl);
   }
 
   @override
@@ -210,5 +198,5 @@ class _HomeState extends State<Home>
     SlangRetailAssistant.setAction(this);
   }
 
-  // Future<void> searchItem() {}
+// Future<void> searchItem() {}
 }

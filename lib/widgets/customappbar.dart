@@ -18,42 +18,43 @@ AppBar customAppbar(BuildContext context) {
     centerTitle: true,
     actions: [
       IconButton(
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Cart(),
-                ));
-          },
-          icon: StreamBuilder<Object>(
-              stream: cartbloc.cartItems,
-              builder: (context, AsyncSnapshot snapshot) {
-                if (snapshot.hasData) {
-                  return Badge(
-                    badgeContent: Text(
-                      snapshot.data.length.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.shopping_cart,
-                      color: Colors.black,
-                    ),
-                  );
-                }
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Cart(),
+              ));
+        },
+        icon: StreamBuilder<Object>(
+            stream: cartbloc.cartItems,
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
                 return Badge(
                   badgeContent: Text(
-                    '0',
+                    snapshot.data.length.toString(),
                     style: TextStyle(
                       color: Colors.white,
                     ),
                   ),
                   child: Icon(
                     Icons.shopping_cart,
+                    color: Colors.black,
                   ),
                 );
-              }))
+              }
+              return Badge(
+                badgeContent: Text(
+                  '0',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                child: Icon(
+                  Icons.shopping_cart,
+                ),
+              );
+            }),
+      )
     ],
   );
 }

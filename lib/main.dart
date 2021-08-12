@@ -13,14 +13,20 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String primaryColorHex = "139A7A";
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: Home(),
       navigatorObservers: [routeObserver],
       theme: ThemeData(
-        primaryColor: Colors.white,
-        scaffoldBackgroundColor: Colors.white,
-      ),
+          primaryColor: Color(int.parse("0xff$primaryColorHex")),
+          scaffoldBackgroundColor: Colors.white,
+          textTheme: ThemeData.light().textTheme.copyWith(
+                title: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              )),
     );
   }
 }
