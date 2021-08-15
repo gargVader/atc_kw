@@ -5,12 +5,14 @@ import 'package:atc_kw/screens/items.dart';
 import 'package:atc_kw/screens/searchpage.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
+import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 import '../main.dart';
+
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -29,6 +31,7 @@ class _HomeState extends State<Home>
   List<Product>? _productList;
   bool _loading = true;
 
+  // Init State
   @override
   void initState() {
     super.initState();
@@ -44,6 +47,34 @@ class _HomeState extends State<Home>
     });
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: customAppbar(context, "Home"),
+        body: Column(
+          children: [
+            SearchBar(
+                initiateSearch: initiateSearch, productList: _productList),
+            (_productList == null)
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Expanded(
+                    child: ListView.builder(
+                        itemCount: _productList == null
+                            ? 0
+                            : (_productList as List<Product>).length,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        itemBuilder: (context, index) {
+                          return RetailItem(
+                              (_productList as List<Product>)[index]);
+                        }),
+                  ),
+          ],
+        ));
+  }
+
+  // Method to fetch all products from json
   Future<List<Product>> fetchAllProducts() async {
     String response = await rootBundle.loadString('assets/list.json');
     var products = await json.decode(response);
@@ -54,11 +85,23 @@ class _HomeState extends State<Home>
     return productList;
   }
 
-  bool? searchforItem(String? searchItem) {
-    for (int i = 0; i < items.length; i++) {
-      return items[i]['name'].toString().toLowerCase() ==
-          (searchItem.toString().trim());
+  void initiateSearch({required String query, SearchInfo? searchInfo}) {
+    List<Product> searchProductList = getSearchProductListFromQuery(query);
+    if (searchProductList.length != 0) {
+      Get.to(SearchPage(
+        searchProductList: searchProductList,
+        allProductList: _productList,
+      ));
+    } else {
+      itemNotFound();
     }
+  }
+
+  List<Product> getSearchProductListFromQuery(String? query) {
+    return (_productList as List<Product>)
+        .where((product) =>
+            product.name.toLowerCase().contains(query!.toLowerCase().trim()))
+        .toList();
   }
 
   @override
@@ -78,7 +121,7 @@ class _HomeState extends State<Home>
           .toList();
     }
     if (searchProductList.length != 0) {
-      Get.to(SearchPage(
+      Get.to(SearchPage.forSlang(
         searchProductList: searchProductList,
         allProductList: _productList,
         searchUserJourney: searchUserJourney,
@@ -88,7 +131,6 @@ class _HomeState extends State<Home>
     } else {
       itemNotFound();
     }
-
     return SearchAppState.WAITING;
   }
 
@@ -101,37 +143,12 @@ class _HomeState extends State<Home>
     SlangRetailAssistant.setLifecycleObserver(this);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: customAppbar(context),
-        body: (_productList == null)
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: _productList == null
-                    ? 0
-                    : (_productList as List<Product>).length,
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                itemBuilder: (context, index) {
-                  return RetailItem((_productList as List<Product>)[index]);
-                }));
+  bool? searchforItem(String? searchItem) {
+    for (int i = 0; i < items.length; i++) {
+      return items[i]['name'].toString().toLowerCase() ==
+          (searchItem.toString().trim());
+    }
   }
-
-  // Product getProduct(var productMap) {
-  //   final int id = productMap['id'];
-  //   final String name = productMap['name'];
-  //   final String synonyms = productMap['synonyms'];
-  //   final String brand = productMap['brand'];
-  //   final double price = double.parse((productMap['price']).toString());
-  //   final int sizeInt = productMap['sizeInt'];
-  //   final String size = productMap['size'];
-  //   final String unit = productMap['unit'];
-  //   final String imageUrl = productMap['imageUrl'];
-  //   return Product(
-  //       id, name, synonyms, brand, price, sizeInt, size, unit, imageUrl);
-  // }
 
   @override
   void onAssistantClosed(bool isCancelled) {
@@ -215,6 +232,4 @@ class _HomeState extends State<Home>
     // TODO: implement didPopNext
     SlangRetailAssistant.setAction(this);
   }
-
-// Future<void> searchItem() {}
 }

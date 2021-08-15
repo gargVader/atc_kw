@@ -28,6 +28,8 @@ dependencies:
   get: ^4.1.4
   rxdart: ^0.27.1
   slang_retail_assistant: ^4.2.3
+  # display suggestions for text fields
+  flutter_typeahead: ^3.0.0-nullsafety.0
 
 dev_dependencies:
   flutter_test:

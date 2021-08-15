@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../cart_bloc.dart';
 
-AppBar customAppbar(BuildContext context) {
+AppBar customAppbar(BuildContext context, String title) {
   return AppBar(
     title: Text(
-      "Home",
+      title,
       style: TextStyle(fontWeight: FontWeight.bold),
     ),
     leading: IconButton(

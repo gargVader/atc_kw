@@ -1,23 +1,33 @@
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
+import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 class SearchPage extends StatefulWidget {
   List<Product>? searchProductList;
   final List<Product>? allProductList;
-  final SearchUserJourney? searchUserJourney;
+  String? searchTerm;
+  SearchUserJourney? searchUserJourney;
   bool? isAddToCart;
-  final SearchInfo? searchInfo;
+  SearchInfo? searchInfo;
 
-  SearchPage({
+  SearchPage.forSlang({
     Key? key,
     this.searchProductList,
     this.allProductList,
+    this.searchTerm,
     this.isAddToCart,
     this.searchInfo,
     this.searchUserJourney,
+  }) : super(key: key);
+
+  SearchPage({
+    Key? key,
+    this.searchTerm,
+    this.searchProductList,
+    this.allProductList,
   }) : super(key: key);
 
   @override
@@ -29,6 +39,7 @@ class _SearchPageState extends State<SearchPage>
   SearchInfo? searchQuery;
 
   void searchAction() {
+    if (widget.searchUserJourney == null) return;
     if (widget.isAddToCart == false) {
       widget.searchUserJourney?.setSuccess();
       widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
@@ -61,19 +72,29 @@ class _SearchPageState extends State<SearchPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: customAppbar(context),
-        body: (widget.searchProductList == null)
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: widget.searchProductList == null
-                    ? 0
-                    : (widget.searchProductList as List<Product>).length,
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                itemBuilder: (context, index) {
-                  return RetailItem(widget.searchProductList![index]);
-                })
+        appBar: customAppbar(context, "Search Items"),
+        body: Column(
+          children: [
+            SearchBar(
+                initiateSearch: initiateSearch,
+                productList: widget.allProductList),
+            (widget.searchProductList == null)
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Expanded(
+                    child: ListView.builder(
+                        itemCount: widget.searchProductList == null
+                            ? 0
+                            : (widget.searchProductList as List<Product>)
+                                .length,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        itemBuilder: (context, index) {
+                          return RetailItem(widget.searchProductList![index]);
+                        }),
+                  ),
+          ],
+        )
 
         // ListView.builder(
         //     itemCount: widget.productList?.length,
@@ -133,8 +154,18 @@ class _SearchPageState extends State<SearchPage>
   //   // return searchProductListFromExisting;
   // }
 
-  void searchForProductsAndUpdateList(
-      List<Product>? productList, SearchInfo? searchInfo, SearchUserJourney searchUserJourney) {
+  void initiateSearch({required String query}) {
+    List<Product> searchProductList = (widget.allProductList as List<Product>)
+        .where((product) =>
+            product.name.toLowerCase().contains(query.toLowerCase().trim()))
+        .toList();
+    setState(() {
+      widget.searchProductList = searchProductList;
+    });
+  }
+
+  void searchForProductsAndUpdateList(List<Product>? productList,
+      SearchInfo? searchInfo, SearchUserJourney searchUserJourney) {
     String? searchItem = searchInfo!.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
 
@@ -157,7 +188,8 @@ class _SearchPageState extends State<SearchPage>
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
-    searchForProductsAndUpdateList(widget.allProductList, searchInfo, searchUserJourney);
+    searchForProductsAndUpdateList(
+        widget.allProductList, searchInfo, searchUserJourney);
     return SearchAppState.WAITING;
 
     // print(searchInfo.item?.description);
