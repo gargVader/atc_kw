@@ -1,13 +1,15 @@
 import 'package:rxdart/rxdart.dart';
 
+import 'models/Product.dart';
+
 class CartBloc {
   BehaviorSubject<List<Map<String, dynamic>>> get cartItems => _cartItems;
   final BehaviorSubject<List<Map<String, dynamic>>> _cartItems =
       BehaviorSubject<List<Map<String, dynamic>>>.seeded([]);
 
-  void addToCart(Map<String, dynamic> item) {
+  void addToCart(Product product) {
     var items = _cartItems.value;
-    items.add(item);
+    // items.add(product);
     _cartItems.sink.add(items);
   }
 

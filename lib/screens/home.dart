@@ -6,6 +6,7 @@ import 'package:atc_kw/screens/searchpage.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
@@ -25,6 +26,8 @@ class _HomeState extends State<Home>
         RouteAware {
   String _searchText = '';
   SearchUserJourney? _searchUserJourney;
+  List<Product>? _productList;
+  bool _loading = true;
 
   @override
   void initState() {
@@ -32,6 +35,23 @@ class _HomeState extends State<Home>
     initSlangRetailAssistant();
     SearchUserJourney.disablePreserveContext();
     SlangRetailAssistant.getUI().showTrigger();
+    _loading = true;
+    fetchAllProducts().then((productList) {
+      setState(() {
+        _productList = productList;
+        _loading = false;
+      });
+    });
+  }
+
+  Future<List<Product>> fetchAllProducts() async {
+    String response = await rootBundle.loadString('assets/list.json');
+    var products = await json.decode(response);
+    List<Product> productList = [];
+    for (var product in products) {
+      productList.add(Product.fromJson(product));
+    }
+    return productList;
   }
 
   bool? searchforItem(String? searchItem) {
@@ -47,22 +67,20 @@ class _HomeState extends State<Home>
     _searchUserJourney = searchUserJourney;
     String? searchItem = searchInfo.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
-    // print("Size = $itemSize");
-    List itemList = items
-        .where((item) => item['name']
-            .toString()
-            .toLowerCase()
-            .contains(searchItem.toString().trim()))
+
+    List<Product> searchProductList = (_productList as List<Product>)
+        .where((product) =>
+            product.name.toLowerCase().contains(searchItem.toString().trim()))
         .toList();
     if (itemSize!.contains("kg")) {
-      itemList = itemList
-          .where((item) =>
-              item['quantity'].toString().toLowerCase().contains(itemSize))
+      searchProductList = searchProductList
+          .where((product) => product.size.toLowerCase().contains(itemSize))
           .toList();
     }
-    if (itemList.length != 0) {
+    if (searchProductList.length != 0) {
       Get.to(SearchPage(
-        itemList: itemList,
+        searchProductList: searchProductList,
+        allProductList: _productList,
         searchUserJourney: searchUserJourney,
         searchInfo: searchInfo,
         isAddToCart: searchInfo.isAddToCart,
@@ -87,33 +105,33 @@ class _HomeState extends State<Home>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: customAppbar(context),
-        body: FutureBuilder(
-          future: DefaultAssetBundle.of(context).loadString('assets/list.json'),
-          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-            var itemList = json.decode(snapshot.data.toString());
-            return ListView.builder(
-                itemCount: itemList == null ? 0 : itemList.length,
+        body: (_productList == null)
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: _productList == null
+                    ? 0
+                    : (_productList as List<Product>).length,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 itemBuilder: (context, index) {
-                  return RetailItem(getProduct(itemList[index]));
-                });
-          },
-        ));
+                  return RetailItem((_productList as List<Product>)[index]);
+                }));
   }
 
-  Product getProduct(var productMap) {
-    final int id = productMap['id'];
-    final String name = productMap['name'];
-    final String synonyms = productMap['synonyms'];
-    final String brand = productMap['brand'];
-    final double price = double.parse((productMap['price']).toString());
-    final int sizeInt = productMap['sizeInt'];
-    final String size = productMap['size'];
-    final String unit = productMap['unit'];
-    final String imageUrl = productMap['imageUrl'];
-    return Product(
-        id, name, synonyms, brand, price, sizeInt, size, unit, imageUrl);
-  }
+  // Product getProduct(var productMap) {
+  //   final int id = productMap['id'];
+  //   final String name = productMap['name'];
+  //   final String synonyms = productMap['synonyms'];
+  //   final String brand = productMap['brand'];
+  //   final double price = double.parse((productMap['price']).toString());
+  //   final int sizeInt = productMap['sizeInt'];
+  //   final String size = productMap['size'];
+  //   final String unit = productMap['unit'];
+  //   final String imageUrl = productMap['imageUrl'];
+  //   return Product(
+  //       id, name, synonyms, brand, price, sizeInt, size, unit, imageUrl);
+  // }
 
   @override
   void onAssistantClosed(bool isCancelled) {
