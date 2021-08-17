@@ -167,7 +167,7 @@ packages:
       name: slang_retail_assistant
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.2.3"
+    version: "5.0.2"
   source_span:
     dependency: transitive
     description:

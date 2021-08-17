@@ -27,7 +27,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.1.4
   rxdart: ^0.27.1
-  slang_retail_assistant: ^4.2.3
+  slang_retail_assistant: ^5.0.2
   # display suggestions for text fields
   flutter_typeahead: ^3.0.0-nullsafety.0
 

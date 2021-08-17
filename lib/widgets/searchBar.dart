@@ -4,21 +4,25 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class SearchBar extends StatelessWidget {
   Function? initiateSearch;
-  List<Product>? productList;
+  List<Product>? allProductList;
+  String? searchTerm;
 
-  SearchBar({required this.initiateSearch, required this.productList});
+  SearchBar(
+      {required this.initiateSearch,
+      required this.allProductList,
+      required this.searchTerm});
 
   @override
   Widget build(BuildContext context) {
     TextEditingController textEditingController = TextEditingController();
-
+    textEditingController.text = searchTerm!;
     return Container(
       color: Theme.of(context).primaryColor,
       padding: EdgeInsets.all(15),
       child: TypeAheadFormField<Product>(
         debounceDuration: Duration(milliseconds: 500),
         suggestionsCallback: (String query) {
-          return productList!
+          return allProductList!
               .where((product) =>
                   product.name.toLowerCase().contains(query.toString().trim()))
               .toList();

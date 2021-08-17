@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class RetailItem extends StatefulWidget {
   Product product;
+  bool _visible=true;
 
   RetailItem(this.product);
 
@@ -26,58 +27,117 @@ class _RetailItemState extends State<RetailItem> {
             return Row(
               children: [
                 Container(
+                  alignment: Alignment.center,
                   margin: EdgeInsets.symmetric(horizontal: 10),
                   width: constraints.maxWidth * 0.15,
                   child: Image(
                     image: NetworkImage(item.imageUrl),
                   ),
                 ),
-                Container(
-                  width: constraints.maxWidth * 0.7,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          item.brand.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          item.name.toUpperCase(),
-                          style: Theme.of(context).textTheme.title,
-                          overflow: TextOverflow.visible,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child:
-                            Text('${item.sizeInt} ${item.unit.toUpperCase()}',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text('\₹ ${item.price}',
+                Expanded(
+                  child: Container(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 0),
+                          child: Text(
+                            item.brand.toUpperCase(),
                             style: TextStyle(
                               color: Colors.grey,
                               fontWeight: FontWeight.bold,
-                            )),
-                      ),
-                    ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            item.name.toUpperCase(),
+                            style: Theme.of(context).textTheme.title,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child:
+                              Text('${item.sizeInt} ${item.unit.toUpperCase()}',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text('\₹ ${item.price}',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              )),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Container(
-                  color: Colors.amberAccent,
-                  child: Row(),
+                  margin: EdgeInsets.only(right: 10),
+                  child: (widget._visible)
+                      ? TextButton(
+                          style: TextButton.styleFrom(
+                              minimumSize: Size.zero, // <-- Add this
+                              padding: EdgeInsets.all(5),
+                              backgroundColor:
+                                  Theme.of(context).primaryColor // <-- and this
+                              ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.add,
+                                color: Colors.white,
+                                size: 15,
+                              ),
+                              Text(
+                                'Add',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              widget._visible = false;
+                            });
+                          },
+                        )
+                      : Container(
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                  maxRadius: 15,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  child: IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.add),
+                                    padding: EdgeInsets.zero,
+                                    color: Colors.white,
+                                    constraints: BoxConstraints(),
+                                  )),
+                              Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 2),
+                                  child: FittedBox(child: Text('0'))),
+                              CircleAvatar(
+                                  maxRadius: 15,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  child: IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.remove),
+                                    padding: EdgeInsets.zero,
+                                    color: Colors.white,
+                                    constraints: BoxConstraints(),
+                                  )),
+                            ],
+                          ),
+                        ),
                 )
               ],
             );

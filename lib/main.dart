@@ -14,12 +14,15 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String primaryColorHex = "139A7A";
+    String colorFabIcon = "f0d765";
+    String colorAccent = "f0851a";
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: Home(),
       navigatorObservers: [routeObserver],
       theme: ThemeData(
           primaryColor: Color(int.parse("0xff$primaryColorHex")),
+
           scaffoldBackgroundColor: Colors.white,
           textTheme: ThemeData.light().textTheme.copyWith(
                 title: TextStyle(

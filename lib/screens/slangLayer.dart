@@ -82,4 +82,9 @@ class SlangLayer
   void onUtteranceDetected(String utterance) {
     // TODO: implement onUtteranceDetected
   }
+
+  @override
+  void onMicPermissionDenied() {
+    // TODO: implement onMicPermissionDenied
+  }
 }

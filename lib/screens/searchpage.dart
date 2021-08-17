@@ -76,8 +76,10 @@ class _SearchPageState extends State<SearchPage>
         body: Column(
           children: [
             SearchBar(
-                initiateSearch: initiateSearch,
-                productList: widget.allProductList),
+              initiateSearch: initiateSearch,
+              allProductList: widget.allProductList,
+              searchTerm: widget.searchTerm,
+            ),
             (widget.searchProductList == null)
                 ? Center(
                     child: CircularProgressIndicator(),
@@ -251,5 +253,10 @@ class _SearchPageState extends State<SearchPage>
   @override
   void onUtteranceDetected(String utterance) {
     // TODO: implement onUtteranceDetected
+  }
+
+  @override
+  void onMicPermissionDenied() {
+    // TODO: implement onMicPermissionDenied
   }
 }
