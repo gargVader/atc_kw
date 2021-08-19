@@ -2,6 +2,7 @@ import 'package:atc_kw/data.dart';
 import 'package:atc_kw/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'utils/constants.dart';
 
 void main() {
   runApp(App());
@@ -22,8 +23,7 @@ class App extends StatelessWidget {
       home: Home(),
       navigatorObservers: [routeObserver],
       theme: ThemeData(
-          primaryColor: Color(int.parse("0xff$primaryColorHex")),
-
+          primaryColor: Color(int.parse("0xff$colorPrimary")),
           scaffoldBackgroundColor: Colors.white,
           textTheme: ThemeData.light().textTheme.copyWith(
                 title: TextStyle(

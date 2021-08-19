@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:atc_kw/cart_bloc.dart';
 import 'package:atc_kw/data.dart';
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/screens/items.dart';
 import 'package:atc_kw/screens/searchpage.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
+import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +14,8 @@ import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 import '../main.dart';
-import 'cart.dart';
 
+// HomePage
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -28,11 +28,14 @@ class _HomeState extends State<Home>
         RetailAssistantAction,
         RetailAssistantLifeCycleObserver,
         RouteAware {
-  String _searchText = '';
   SearchUserJourney? _searchUserJourney;
   Map<int, Product>? _productMap;
+
+  // List of products to be generated later
+  late List<Product> _productList;
+
+  // Boolean to signify loading of items in homepage
   bool _loading = true;
-  int q = 0;
 
   // Init State
   @override
@@ -42,31 +45,35 @@ class _HomeState extends State<Home>
     initSlangRetailAssistant();
     SearchUserJourney.disablePreserveContext();
     SlangRetailAssistant.getUI().showTrigger();
-    // Fetch productList from JSON
 
-    if(Data.instance.allProductMap!=null){
+    // Fetch productMap from JSON if not already cached.
+    if (Data.instance.allProductMap != null) {
       _productMap = Data.instance.allProductMap;
+      _productList = generateProductListFromProductMap(_productMap);
       _loading = false;
-    }else{
+    } else {
       Data.instance.getAllProducts().then((productMap) => setState(() {
             _productMap = productMap;
+            _productList = generateProductListFromProductMap(_productMap);
             _loading = false;
           }));
     }
+  }
 
-    // getAllProducts().then((productMap) {
-    //   setState(() {
-    //     _productMap = productMap;
-    //     _loading = false;
-    //   });
-    // });
+  List<Product> generateProductListFromProductMap(
+      Map<int, Product>? productMap) {
+    List<Product> productList = [];
+    _productMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      productList.add(product);
+    });
+    return productList;
   }
 
   // Build func for Home screen
   @override
   Widget build(BuildContext context) {
-    String colorFabIcon = "f0d765";
-    String colorAccent = "f0851a";
     return Scaffold(
       appBar: customAppbar(context, "Home"),
       body: Column(
@@ -77,84 +84,28 @@ class _HomeState extends State<Home>
             initiateSearch: initiateSearch,
             allProductMap: _productMap,
           ),
+          // ListView for products
           _buildListView(),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: Container(
-        child: FittedBox(
-          child: Stack(
-            alignment: Alignment(1.0, -0.9),
-            children: [
-              FloatingActionButton(
-                // Your actual Fab
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Cart(),
-                      ));
-                },
-                child: Icon(Icons.shopping_cart),
-                backgroundColor: Color(int.parse("0xff$colorFabIcon")),
-              ),
-              Container(
-                // This is your Badge
-                child: Center(
-                    // Here you can put whatever content you want inside your Badge
-                    child: StreamBuilder<Object>(
-                  stream: CartBloc.instance.cartStream,
-                  builder: (context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData) {
-                      Map productMap = snapshot.data;
-                      return Text('${productMap.length}',
-                          style: TextStyle(color: Colors.white, fontSize: 10));
-                    }
-                    return Text('0',
-                        style: TextStyle(color: Colors.white, fontSize: 10));
-                  },
-                )),
-                padding: EdgeInsets.all(0),
-
-                constraints: BoxConstraints(minHeight: 20, minWidth: 20),
-                decoration: BoxDecoration(
-                  // This controls the shadow
-                  boxShadow: [
-                    BoxShadow(
-                        spreadRadius: 1,
-                        blurRadius: 5,
-                        color: Colors.black.withAlpha(50))
-                  ],
-                  borderRadius: BorderRadius.circular(16),
-                  color: Color(int.parse(
-                      "0xff$colorAccent")), // This would be color of the Badge
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      floatingActionButton: FabCart(),
     );
   }
 
   Widget _buildListView() {
     return (_productMap == null)
-        ? Center(
-            child: CircularProgressIndicator(),
+        ? Expanded(
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
           )
         : Expanded(
             child: ListView.builder(
                 itemCount: _productMap == null ? 0 : _productMap!.length,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 itemBuilder: (context, index) {
-                  List<Product> productList = [];
-                  _productMap!.entries.forEach((element) {
-                    int productID = element.key;
-                    Product product = element.value;
-                    productList.add(product);
-                  });
-
-                  return RetailItem((productList)[index]);
+                  return RetailItem(_productList[index]);
                 }),
           );
   }

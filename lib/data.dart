@@ -4,9 +4,10 @@ import 'package:flutter/services.dart';
 
 import 'models/Product.dart';
 
-/// Singleton class for data operartions
+/// Singleton class for fetching and caching data from JSON
 class Data{
 
+  // (productId -> Product)
   static Map<int, Product>? _allProductMap;
   static Data instance = new Data._();
 
