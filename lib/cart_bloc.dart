@@ -3,30 +3,53 @@ import 'package:rxdart/rxdart.dart';
 import 'models/Product.dart';
 
 class CartBloc {
-  BehaviorSubject<List<Map<String, dynamic>>> get cartItems => _cartItems;
-  final BehaviorSubject<List<Map<String, dynamic>>> _cartItems =
-      BehaviorSubject<List<Map<String, dynamic>>>.seeded([]);
+  late final BehaviorSubject<Map> _cartItems;
+  static CartBloc instance = new CartBloc._();
+
+  CartBloc._() {
+    // (productId -> quantity)
+    _cartItems = BehaviorSubject<Map<int, int>>.seeded(new Map());
+  }
+
+  BehaviorSubject<Map> get cartItems => _cartItems;
+
+  Stream<Map> get cartStream => _cartItems.stream;
 
   void addToCart(Product product) {
-    var items = _cartItems.value;
-    // items.add(product);
-    _cartItems.sink.add(items);
+    print('Adding to cart');
+    int id = product.id;
+    // (productId -> qty )
+    Map productMap = _cartItems.value;
+    if (productMap[id] == null) {
+      productMap[id] = 1;
+    } else {
+      productMap[id]++;
+    }
+    _cartItems.sink.add(productMap);
   }
 
   void removeFromCart(int id) {
     print(id);
-    var items = _cartItems.value;
-    for (int i = 0; i < items.length; i++) {
-      if (id == items[i]['id']) {
-        items.remove(items[i]);
+    Map productMap = _cartItems.value;
+
+    if (productMap.containsKey(id)) {
+      if (productMap[id] == 1) {
+        productMap.remove(id);
+      } else {
+        productMap[id]--;
       }
+      _cartItems.sink.add(productMap);
     }
-    _cartItems.sink.add(items);
+    // var items = _cartItems.value;
+    // for (int i = 0; i < items.length; i++) {
+    //   if (id == items[i]['id']) {
+    //     items.remove(items[i]);
+    //   }
+    // }
+    // _cartItems.sink.add(items);
   }
 
   void dispose() {
     _cartItems.close();
   }
 }
-
-final cartbloc = CartBloc();

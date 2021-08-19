@@ -1,4 +1,7 @@
 import 'package:atc_kw/cart_bloc.dart';
+import 'package:atc_kw/data.dart';
+import 'package:atc_kw/models/Product.dart';
+import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:flutter/material.dart';
 
 class Cart extends StatelessWidget {
@@ -14,50 +17,69 @@ class Cart extends StatelessWidget {
         ),
         elevation: 0,
       ),
-      body: StreamBuilder<Object>(
-          stream: cartbloc.cartItems,
-          builder: (context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData && cartbloc.cartItems.value.length != 0) {
-              return ListView.builder(
-                  itemCount: snapshot.data.length,
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: ListTile(
-                        tileColor: Colors.grey[200],
-                        contentPadding: EdgeInsets.all(10),
-                        minVerticalPadding: 4,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
-                        key: Key(index.toString()),
-                        leading: IconButton(
-                          onPressed: () {
-                            cartbloc.removeFromCart(snapshot.data[index]['id']);
-                          },
-                          icon: Icon(
-                            Icons.remove_circle,
-                            color: Colors.black,
-                          ),
-                        ),
-                        title: Text(snapshot.data[index]['name'].toString(),
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(
-                            "${snapshot.data[index]['quantity'].toString()}, ${snapshot.data[index]['price'].toString()}"),
-                        trailing: IconButton(
-                            onPressed: () {
-                              cartbloc.addToCart(snapshot.data[index]);
-                              print(cartbloc.cartItems.value);
-                            },
-                            icon: Icon(
-                              Icons.shopping_basket,
-                            )),
-                      ),
-                    );
-                  });
-            }
-            return Center(child: Text("No Items to show..."));
-          }),
+      body: Column(
+        children: [
+          StreamBuilder<Object>(
+              stream: CartBloc.instance.cartStream,
+              builder: (context, AsyncSnapshot snapshot) {
+                if (snapshot.hasData &&
+                    CartBloc.instance.cartItems.value.length != 0) {
+                  // (productId -> qty)
+                  Map productMap = snapshot.data;
+                  List productIdList = productMap.keys.toList();
+
+                  return _buildListView(productIdList);
+                }
+                return Center(child: Text("Your cart is empty..."));
+              }),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+            color: Colors.black,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Total : Rs 450',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: Text('CHECKOUT'),
+                  style: ElevatedButton.styleFrom(
+                      primary: Theme.of(context).primaryColor),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
     );
+  }
+
+  Widget _buildListView(List productIdList) {
+
+    // (productId -> Product)
+    Map<int, Product>? allProductMap = Data.instance.allProductMap;
+
+    return (productIdList == null)
+        ? Center(
+            child: CircularProgressIndicator(),
+          )
+        : Expanded(
+            child: ListView.builder(
+                itemCount: productIdList == null
+                    ? 0
+                    : productIdList.length,
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                itemBuilder: (context, index) {
+                  int id = productIdList[index];
+                  return RetailItem(allProductMap![id]);
+                }),
+          );
   }
 }

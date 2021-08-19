@@ -1,3 +1,4 @@
+import 'package:atc_kw/data.dart';
 import 'package:atc_kw/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

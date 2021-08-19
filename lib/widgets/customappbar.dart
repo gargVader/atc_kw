@@ -26,12 +26,13 @@ AppBar customAppbar(BuildContext context, String title) {
               ));
         },
         icon: StreamBuilder<Object>(
-            stream: cartbloc.cartItems,
+            stream: CartBloc.instance.cartStream,
             builder: (context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
+                Map productMap = snapshot.data;
                 return Badge(
                   badgeContent: Text(
-                    snapshot.data.length.toString(),
+                    '${productMap.length}',
                     style: TextStyle(
                       color: Colors.white,
                     ),

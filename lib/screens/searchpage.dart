@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 class SearchPage extends StatefulWidget {
-  List<Product>? searchProductList;
-  final List<Product>? allProductList;
+  Map<int, Product>? searchProductMap;
+  final Map<int, Product>? allProductMap;
   String? searchTerm;
   SearchUserJourney? searchUserJourney;
   bool? isAddToCart;
@@ -15,8 +15,8 @@ class SearchPage extends StatefulWidget {
 
   SearchPage.forSlang({
     Key? key,
-    this.searchProductList,
-    this.allProductList,
+    this.searchProductMap,
+    this.allProductMap,
     this.searchTerm,
     this.isAddToCart,
     this.searchInfo,
@@ -26,8 +26,8 @@ class SearchPage extends StatefulWidget {
   SearchPage({
     Key? key,
     this.searchTerm,
-    this.searchProductList,
-    this.allProductList,
+    this.searchProductMap,
+    this.allProductMap,
   }) : super(key: key);
 
   @override
@@ -77,61 +77,36 @@ class _SearchPageState extends State<SearchPage>
           children: [
             SearchBar(
               initiateSearch: initiateSearch,
-              allProductList: widget.allProductList,
+              allProductMap: widget.allProductMap,
               searchTerm: widget.searchTerm,
             ),
-            (widget.searchProductList == null)
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : Expanded(
-                    child: ListView.builder(
-                        itemCount: widget.searchProductList == null
-                            ? 0
-                            : (widget.searchProductList as List<Product>)
-                                .length,
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        itemBuilder: (context, index) {
-                          return RetailItem(widget.searchProductList![index]);
-                        }),
-                  ),
+            _buildListView(),
           ],
-        )
+        ));
+  }
 
-        // ListView.builder(
-        //     itemCount: widget.productList?.length,
-        //     padding: EdgeInsets.symmetric(horizontal: 12),
-        //     itemBuilder: (context, index) {
-        //       return Padding(
-        //         padding: const EdgeInsets.symmetric(vertical: 4),
-        //         child: ListTile(
-        //           tileColor: Colors.grey[200],
-        //           contentPadding: EdgeInsets.all(10),
-        //           minVerticalPadding: 4,
-        //           shape: RoundedRectangleBorder(
-        //               borderRadius: BorderRadius.circular(5)),
-        //           key: Key(index.toString()),
-        //           leading: Icon(
-        //             Icons.store,
-        //             color: Colors.black,
-        //           ),
-        //           title: Text(
-        //             widget.productList![index].name,
-        //             style: TextStyle(fontWeight: FontWeight.bold),
-        //           ),
-        //           subtitle: Text(
-        //             "${widget.productList![index].sizeInt} ${widget.productList![index].unit.toUpperCase()}, ${widget.productList![index].price}",
-        //           ),
-        //           trailing: IconButton(
-        //               onPressed: () {
-        //                 cartbloc.addToCart(widget.productList![index]);
-        //                 print(cartbloc.cartItems.value);
-        //               },
-        //               icon: Icon(Icons.shopping_cart)),
-        //         ),
-        //       );
-        //     }),
-        );
+  Widget _buildListView() {
+    List<Product> productList = [];
+    widget.searchProductMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      productList.add(product);
+    });
+
+    return (widget.searchProductMap == null)
+        ? Center(
+            child: CircularProgressIndicator(),
+          )
+        : Expanded(
+            child: ListView.builder(
+                itemCount: widget.searchProductMap == null
+                    ? 0
+                    : widget.searchProductMap!.length,
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                itemBuilder: (context, index) {
+                  return RetailItem((productList)[index]);
+                }),
+          );
   }
 
   // manyItemsDetected(List<Product>? productList, SearchInfo? searchInfo) {
@@ -157,31 +132,39 @@ class _SearchPageState extends State<SearchPage>
   // }
 
   void initiateSearch({required String query}) {
-    List<Product> searchProductList = (widget.allProductList as List<Product>)
-        .where((product) =>
-            product.name.toLowerCase().contains(query.toLowerCase().trim()))
-        .toList();
+    // List<Product> searchProductList = (widget.allProductMap as List<Product>)
+    //     .where((product) =>
+    //         product.name.toLowerCase().contains(query.toLowerCase().trim()))
+    //     .toList();
+    Map<int, Product> searchProductMap = new Map();
+    widget.allProductMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
+        searchProductMap[productID] = product;
+      }
+    });
+
     setState(() {
-      widget.searchProductList = searchProductList;
+      widget.searchProductMap = searchProductMap;
     });
   }
 
-  void searchForProductsAndUpdateList(List<Product>? productList,
+  void searchForProductsAndUpdateList(Map<int, Product>? allProductMap,
       SearchInfo? searchInfo, SearchUserJourney searchUserJourney) {
     String? searchItem = searchInfo!.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
 
-    List<Product> searchProductList = (productList as List<Product>)
-        .where((product) =>
-            product.name.toLowerCase().contains(searchItem.toString().trim()))
-        .toList();
-    if (itemSize!.contains("kg")) {
-      searchProductList = searchProductList
-          .where((product) => product.size.toLowerCase().contains(itemSize))
-          .toList();
-    }
+    Map<int, Product> searchProductMap = new Map();
+    widget.allProductMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      if (product.name.toLowerCase().contains(searchItem!.toLowerCase().trim())) {
+        searchProductMap[productID] = product;
+      }
+    });
     setState(() {
-      widget.searchProductList = searchProductList;
+      widget.searchProductMap = searchProductMap;
       widget.searchUserJourney?.setSuccess();
       widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
     });
@@ -191,7 +174,7 @@ class _SearchPageState extends State<SearchPage>
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     searchForProductsAndUpdateList(
-        widget.allProductList, searchInfo, searchUserJourney);
+        widget.allProductMap, searchInfo, searchUserJourney);
     return SearchAppState.WAITING;
 
     // print(searchInfo.item?.description);

@@ -4,12 +4,12 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class SearchBar extends StatelessWidget {
   Function? initiateSearch;
-  List<Product>? allProductList;
+  Map<int, Product>? allProductMap;
   String? searchTerm;
 
   SearchBar(
       {required this.initiateSearch,
-      required this.allProductList,
+      required this.allProductMap,
       required this.searchTerm});
 
   @override
@@ -22,7 +22,15 @@ class SearchBar extends StatelessWidget {
       child: TypeAheadFormField<Product>(
         debounceDuration: Duration(milliseconds: 500),
         suggestionsCallback: (String query) {
-          return allProductList!
+
+          List<Product> productList = [];
+          allProductMap!.entries.forEach((element) {
+            int productID = element.key;
+            Product product = element.value;
+            productList.add(product);
+          });
+
+          return productList!
               .where((product) =>
                   product.name.toLowerCase().contains(query.toString().trim()))
               .toList();

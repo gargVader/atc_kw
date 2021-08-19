@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:atc_kw/cart_bloc.dart';
+import 'package:atc_kw/data.dart';
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/screens/items.dart';
 import 'package:atc_kw/screens/searchpage.dart';
@@ -12,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 import '../main.dart';
+import 'cart.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -27,7 +30,7 @@ class _HomeState extends State<Home>
         RouteAware {
   String _searchText = '';
   SearchUserJourney? _searchUserJourney;
-  List<Product>? _productList;
+  Map<int, Product>? _productMap;
   bool _loading = true;
   int q = 0;
 
@@ -40,12 +43,23 @@ class _HomeState extends State<Home>
     SearchUserJourney.disablePreserveContext();
     SlangRetailAssistant.getUI().showTrigger();
     // Fetch productList from JSON
-    fetchAllProducts().then((productList) {
-      setState(() {
-        _productList = productList;
-        _loading = false;
-      });
-    });
+
+    if(Data.instance.allProductMap!=null){
+      _productMap = Data.instance.allProductMap;
+      _loading = false;
+    }else{
+      Data.instance.getAllProducts().then((productMap) => setState(() {
+            _productMap = productMap;
+            _loading = false;
+          }));
+    }
+
+    // getAllProducts().then((productMap) {
+    //   setState(() {
+    //     _productMap = productMap;
+    //     _loading = false;
+    //   });
+    // });
   }
 
   // Build func for Home screen
@@ -57,10 +71,11 @@ class _HomeState extends State<Home>
       appBar: customAppbar(context, "Home"),
       body: Column(
         children: [
+          // Search Bar
           SearchBar(
             searchTerm: "",
             initiateSearch: initiateSearch,
-            allProductList: _productList,
+            allProductMap: _productMap,
           ),
           _buildListView(),
         ],
@@ -69,14 +84,16 @@ class _HomeState extends State<Home>
       floatingActionButton: Container(
         child: FittedBox(
           child: Stack(
-            alignment: Alignment(1.4, -1.5),
+            alignment: Alignment(1.0, -0.9),
             children: [
               FloatingActionButton(
                 // Your actual Fab
                 onPressed: () {
-                  setState(() {
-                    q++;
-                  });
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Cart(),
+                      ));
                 },
                 child: Icon(Icons.shopping_cart),
                 backgroundColor: Color(int.parse("0xff$colorFabIcon")),
@@ -84,11 +101,22 @@ class _HomeState extends State<Home>
               Container(
                 // This is your Badge
                 child: Center(
-                  // Here you can put whatever content you want inside your Badge
-                  child: Text('$q', style: TextStyle(color: Colors.white)),
-                ),
-                padding: EdgeInsets.all(8),
-                constraints: BoxConstraints(minHeight: 32, minWidth: 32),
+                    // Here you can put whatever content you want inside your Badge
+                    child: StreamBuilder<Object>(
+                  stream: CartBloc.instance.cartStream,
+                  builder: (context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData) {
+                      Map productMap = snapshot.data;
+                      return Text('${productMap.length}',
+                          style: TextStyle(color: Colors.white, fontSize: 10));
+                    }
+                    return Text('0',
+                        style: TextStyle(color: Colors.white, fontSize: 10));
+                  },
+                )),
+                padding: EdgeInsets.all(0),
+
+                constraints: BoxConstraints(minHeight: 20, minWidth: 20),
                 decoration: BoxDecoration(
                   // This controls the shadow
                   boxShadow: [
@@ -110,52 +138,68 @@ class _HomeState extends State<Home>
   }
 
   Widget _buildListView() {
-    return (_productList == null)
+    return (_productMap == null)
         ? Center(
             child: CircularProgressIndicator(),
           )
         : Expanded(
             child: ListView.builder(
-                itemCount: _productList == null
-                    ? 0
-                    : (_productList as List<Product>).length,
+                itemCount: _productMap == null ? 0 : _productMap!.length,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 itemBuilder: (context, index) {
-                  return RetailItem((_productList as List<Product>)[index]);
+                  List<Product> productList = [];
+                  _productMap!.entries.forEach((element) {
+                    int productID = element.key;
+                    Product product = element.value;
+                    productList.add(product);
+                  });
+
+                  return RetailItem((productList)[index]);
                 }),
           );
   }
 
   // Method to fetch all products from json
-  Future<List<Product>> fetchAllProducts() async {
+  Future<Map<int, Product>> getAllProducts() async {
     String response = await rootBundle.loadString('assets/list.json');
     var products = await json.decode(response);
-    List<Product> productList = [];
-    for (var product in products) {
-      productList.add(Product.fromJson(product));
+    Map<int, Product> productMap = new Map();
+    for (var productJson in products) {
+      Product product = Product.fromJson(productJson);
+      int id = product.id;
+      productMap[id] = product;
     }
-    return productList;
+    return productMap;
   }
 
   // initiateSearch that is called from (home -> SearchPage)
   void initiateSearch({required String query, SearchInfo? searchInfo}) {
-    List<Product> searchProductList = getSearchProductListFromQuery(query);
-    if (searchProductList.length != 0) {
+    Map<int, Product> searchProductMap = getSearchProductMapFromQuery(query);
+    if (searchProductMap.length != 0) {
       Get.to(SearchPage(
         searchTerm: query,
-        searchProductList: searchProductList,
-        allProductList: _productList,
+        searchProductMap: searchProductMap,
+        allProductMap: _productMap,
       ));
     } else {
       itemNotFound();
     }
   }
 
-  List<Product> getSearchProductListFromQuery(String? query) {
-    return (_productList as List<Product>)
-        .where((product) =>
-            product.name.toLowerCase().contains(query!.toLowerCase().trim()))
-        .toList();
+  Map<int, Product> getSearchProductMapFromQuery(String? query) {
+    Map<int, Product> searchProductMap = new Map();
+    _productMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
+        searchProductMap[productID] = product;
+      }
+    });
+    return searchProductMap;
+    // return (_productList as List<Product>)
+    //     .where((product) =>
+    //         product.name.toLowerCase().contains(query!.toLowerCase().trim()))
+    //     .toList();
   }
 
   @override
@@ -165,11 +209,12 @@ class _HomeState extends State<Home>
     String? searchItem = searchInfo.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
 
-    List<Product> searchProductList = getSearchProductListFromQuery(searchItem);
-    if (searchProductList.length != 0) {
+    Map<int, Product> searchProductMap =
+        getSearchProductMapFromQuery(searchItem);
+    if (searchProductMap.length != 0) {
       Get.to(SearchPage.forSlang(
-        searchProductList: searchProductList,
-        allProductList: _productList,
+        searchProductMap: searchProductMap,
+        allProductMap: _productMap,
         searchTerm: searchItem,
         searchUserJourney: searchUserJourney,
         searchInfo: searchInfo,
@@ -182,9 +227,13 @@ class _HomeState extends State<Home>
   }
 
   void initSlangRetailAssistant() {
+    AssistantUIPosition assistantUIPosition = new AssistantUIPosition();
+    assistantUIPosition.isDraggable = true;
     var assistantConfig = new AssistantConfiguration()
       ..assistantId = "bf08dee83833499d9556af7874634ed0"
-      ..apiKey = "00aca65a68494054974680374b360fce";
+      ..apiKey = "00aca65a68494054974680374b360fce"
+      ..uiPosition = assistantUIPosition;
+
     SlangRetailAssistant.initialize(assistantConfig);
     SlangRetailAssistant.setAction(this);
     SlangRetailAssistant.setLifecycleObserver(this);

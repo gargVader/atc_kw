@@ -7,30 +7,28 @@ import 'models/Product.dart';
 /// Singleton class for data operartions
 class Data{
 
-  static Data? _instance;
-  static List<Product>? allProducts;
+  static Map<int, Product>? _allProductMap;
+  static Data instance = new Data._();
 
-  Data._data(){
-   getAllProducts().then((productList) {
-     allProducts = productList;
+  // Private constructor
+  Data._(){
+   getAllProducts().then((productMap) {
+     _allProductMap = productMap;
    });
   }
 
-  static Data getInstance(){
-    if(_instance==null){
-      _instance = Data._data();
-    }
-    return (_instance as Data);
-  }
+  Map<int, Product>? get allProductMap => _allProductMap;
 
-  Future<List<Product>> getAllProducts() async {
+  Future<Map<int, Product>> getAllProducts() async {
     String response = await rootBundle.loadString('assets/list.json');
     var products = await json.decode(response);
-    List<Product> productList = [];
-    for (var product in products) {
-      productList.add(Product.fromJson(product));
+    Map<int, Product> productMap = new Map();
+    for (var productJson in products) {
+      Product product = Product.fromJson(productJson);
+      int id = product.id;
+      productMap[id] = product;
     }
-    return productList;
+    return productMap;
   }
 
 
