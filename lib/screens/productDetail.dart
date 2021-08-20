@@ -76,9 +76,9 @@ class _ProductDetailState extends State<ProductDetail> {
                             builder: (context, AsyncSnapshot snapshot) {
                               if (snapshot.hasData) {
                                 Map productMap = snapshot.data;
-                                var qty = productMap[widget.product] == null
+                                var qty = (!productMap.containsKey(widget.product.id) || productMap[widget.product.id] == null)
                                     ? 0
-                                    : productMap[widget.product];
+                                    : productMap[widget.product.id];
                                 return Text('$qty');
                               }
                               return Text('0');
@@ -89,7 +89,8 @@ class _ProductDetailState extends State<ProductDetail> {
                           backgroundColor: Theme.of(context).primaryColor,
                           child: IconButton(
                             onPressed: () {
-                              CartBloc.instance.removeFromCart(widget.product.id);
+                              CartBloc.instance
+                                  .removeFromCart(widget.product.id);
                             },
                             icon: Icon(Icons.remove),
                             padding: EdgeInsets.zero,

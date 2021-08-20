@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 
 import '../cart_bloc.dart';
 
-/// Widget for RetailItem. Just needs the product onject that needs to displayed.
+/// Widget for RetailItem. Just needs the product object that needs to displayed.
 /// The qty will be fetched from cartStream
 class RetailItem extends StatefulWidget {
   Product? product;
+  // Tells whether the add button should be visible or not
+  // In case of false, the (+,qty,-) view is visible
   bool _visible = true;
 
   RetailItem(this.product);
@@ -23,8 +25,9 @@ class _RetailItemState extends State<RetailItem> {
     Product? product = widget.product;
     product!.imageUrl = getImageUrl(product.name);
 
+    // (productId -> quantity) used for getting qty
     Map productMap = CartBloc.instance.cartItems.value;
-    if (productMap[product] != null) {
+    if (productMap[product.id] != null) {
       setState(() {
         widget._visible = false;
       });
@@ -222,6 +225,7 @@ class _RetailItemState extends State<RetailItem> {
     );
   }
 
+  // Method to get image url based on product.name
   String getImageUrl(String name) {
     final String imageUrl;
     if (name.toLowerCase().contains("tomato")) {

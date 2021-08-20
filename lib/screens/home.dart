@@ -1,15 +1,12 @@
-import 'dart:convert';
-
 import 'package:atc_kw/data.dart';
 import 'package:atc_kw/models/Product.dart';
-import 'package:atc_kw/screens/items.dart';
 import 'package:atc_kw/screens/searchpage.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
@@ -80,7 +77,6 @@ class _HomeState extends State<Home>
         children: [
           // Search Bar
           SearchBar(
-            searchTerm: "",
             initiateSearch: initiateSearch,
             allProductMap: _productMap,
           ),
@@ -110,20 +106,8 @@ class _HomeState extends State<Home>
           );
   }
 
-  // Method to fetch all products from json
-  Future<Map<int, Product>> getAllProducts() async {
-    String response = await rootBundle.loadString('assets/list.json');
-    var products = await json.decode(response);
-    Map<int, Product> productMap = new Map();
-    for (var productJson in products) {
-      Product product = Product.fromJson(productJson);
-      int id = product.id;
-      productMap[id] = product;
-    }
-    return productMap;
-  }
-
   // initiateSearch that is called from (home -> SearchPage)
+  // Used in search bar
   void initiateSearch({required String query, SearchInfo? searchInfo}) {
     Map<int, Product> searchProductMap = getSearchProductMapFromQuery(query);
     if (searchProductMap.length != 0) {
@@ -153,6 +137,7 @@ class _HomeState extends State<Home>
     //     .toList();
   }
 
+  // Initiated by Slang
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
@@ -160,6 +145,7 @@ class _HomeState extends State<Home>
     String? searchItem = searchInfo.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
 
+    // Initiate search for Slang
     Map<int, Product> searchProductMap =
         getSearchProductMapFromQuery(searchItem);
     if (searchProductMap.length != 0) {
@@ -190,12 +176,12 @@ class _HomeState extends State<Home>
     SlangRetailAssistant.setLifecycleObserver(this);
   }
 
-  bool? searchforItem(String? searchItem) {
-    for (int i = 0; i < items.length; i++) {
-      return items[i]['name'].toString().toLowerCase() ==
-          (searchItem.toString().trim());
-    }
-  }
+  // bool? searchforItem(String? searchItem) {
+  //   for (int i = 0; i < items.length; i++) {
+  //     return items[i]['name'].toString().toLowerCase() ==
+  //         (searchItem.toString().trim());
+  //   }
+  // }
 
   @override
   void onAssistantClosed(bool isCancelled) {
@@ -249,6 +235,11 @@ class _HomeState extends State<Home>
   }
 
   Future<void> itemNotFound() async {
+    Fluttertoast.showToast(
+      msg: "No items found",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+    );
     _searchUserJourney?.setItemNotFound();
     _searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
   }

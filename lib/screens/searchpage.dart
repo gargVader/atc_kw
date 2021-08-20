@@ -1,5 +1,6 @@
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
+import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +16,9 @@ class SearchPage extends StatefulWidget {
 
   SearchPage.forSlang({
     Key? key,
+    this.searchTerm,
     this.searchProductMap,
     this.allProductMap,
-    this.searchTerm,
     this.isAddToCart,
     this.searchInfo,
     this.searchUserJourney,
@@ -72,17 +73,19 @@ class _SearchPageState extends State<SearchPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: customAppbar(context, "Search Items"),
-        body: Column(
-          children: [
-            SearchBar(
-              initiateSearch: initiateSearch,
-              allProductMap: widget.allProductMap,
-              searchTerm: widget.searchTerm,
-            ),
-            _buildListView(),
-          ],
-        ));
+      appBar: customAppbar(context, "Search Items"),
+      body: Column(
+        children: [
+          SearchBar(
+            initiateSearch: initiateSearch,
+            allProductMap: widget.allProductMap,
+          ),
+          _buildListView(),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButton: FabCart(),
+    );
   }
 
   Widget _buildListView() {
@@ -131,6 +134,8 @@ class _SearchPageState extends State<SearchPage>
   //   // return searchProductListFromExisting;
   // }
 
+  // Search function for SearchPage
+  // Searches for query and updates searchProductMap
   void initiateSearch({required String query}) {
     // List<Product> searchProductList = (widget.allProductMap as List<Product>)
     //     .where((product) =>
@@ -140,7 +145,7 @@ class _SearchPageState extends State<SearchPage>
     widget.allProductMap!.entries.forEach((element) {
       int productID = element.key;
       Product product = element.value;
-      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
+      if (product.name.toLowerCase().contains(query.toLowerCase().trim())) {
         searchProductMap[productID] = product;
       }
     });
@@ -150,7 +155,9 @@ class _SearchPageState extends State<SearchPage>
     });
   }
 
-  void searchForProductsAndUpdateList(Map<int, Product>? allProductMap,
+  // Search function for SearchPage used by Slang
+  // Searches for query and updates searchProductMap
+  void initiateSearchForSlang(Map<int, Product>? allProductMap,
       SearchInfo? searchInfo, SearchUserJourney searchUserJourney) {
     String? searchItem = searchInfo!.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
@@ -159,7 +166,9 @@ class _SearchPageState extends State<SearchPage>
     widget.allProductMap!.entries.forEach((element) {
       int productID = element.key;
       Product product = element.value;
-      if (product.name.toLowerCase().contains(searchItem!.toLowerCase().trim())) {
+      if (product.name
+          .toLowerCase()
+          .contains(searchItem!.toLowerCase().trim())) {
         searchProductMap[productID] = product;
       }
     });
@@ -173,8 +182,7 @@ class _SearchPageState extends State<SearchPage>
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
-    searchForProductsAndUpdateList(
-        widget.allProductMap, searchInfo, searchUserJourney);
+    initiateSearchForSlang(widget.allProductMap, searchInfo, searchUserJourney);
     return SearchAppState.WAITING;
 
     // print(searchInfo.item?.description);
