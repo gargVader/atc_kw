@@ -6,7 +6,6 @@ import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
@@ -110,15 +109,11 @@ class _HomeState extends State<Home>
   // Used in search bar
   void initiateSearch({required String query, SearchInfo? searchInfo}) {
     Map<int, Product> searchProductMap = getSearchProductMapFromQuery(query);
-    if (searchProductMap.length != 0) {
-      Get.to(SearchPage(
-        searchTerm: query,
-        searchProductMap: searchProductMap,
-        allProductMap: _productMap,
-      ));
-    } else {
-      itemNotFound();
-    }
+    Get.to(SearchPage(
+      searchTerm: query,
+      searchProductMap: searchProductMap,
+      allProductMap: _productMap,
+    ));
   }
 
   Map<int, Product> getSearchProductMapFromQuery(String? query) {
@@ -148,7 +143,7 @@ class _HomeState extends State<Home>
     // Initiate search for Slang
     Map<int, Product> searchProductMap =
         getSearchProductMapFromQuery(searchItem);
-    if (searchProductMap.length != 0) {
+    // if (searchProductMap.length != 0) {
       Get.to(SearchPage.forSlang(
         searchProductMap: searchProductMap,
         allProductMap: _productMap,
@@ -157,9 +152,12 @@ class _HomeState extends State<Home>
         searchInfo: searchInfo,
         isAddToCart: searchInfo.isAddToCart,
       ));
-    } else {
-      itemNotFound();
-    }
+      if(searchProductMap.length==0){
+        itemNotFound();
+      }
+    // } else {
+    //   itemNotFound();
+    // }
     return SearchAppState.WAITING;
   }
 
@@ -235,11 +233,6 @@ class _HomeState extends State<Home>
   }
 
   Future<void> itemNotFound() async {
-    Fluttertoast.showToast(
-      msg: "No items found",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.CENTER,
-    );
     _searchUserJourney?.setItemNotFound();
     _searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
   }

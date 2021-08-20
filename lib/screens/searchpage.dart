@@ -6,6 +6,8 @@ import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
+import '../cart_bloc.dart';
+
 class SearchPage extends StatefulWidget {
   Map<int, Product>? searchProductMap;
   final Map<int, Product>? allProductMap;
@@ -45,16 +47,24 @@ class _SearchPageState extends State<SearchPage>
       widget.searchUserJourney?.setSuccess();
       widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
     } else {
-      addToCartFlow();
+      print('Add to cart');
+      widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      // addToCartFlow();
     }
   }
 
   addToCartFlow() {
-    // if (widget.isAddToCart == true && widget.productList!.length == 1) {
-    //   cartbloc.addToCart(widget.productList[0]);
+    // Map productQtyMap = CartBloc.instance.cartItems.value;
+    // Map<int, Product>? sea = this.widget.searchProductMap;
+    // String? searchItem = widget.searchInfo!.item?.description;
+    // String? itemSize = widget.searchInfo!.item?.size.toString();
+    //
+    // if (widget.isAddToCart == true && productQtyMap.length == 1) {
+    //   CartBloc.instance.addToCart()
+    //   // cartbloc.addToCart(widget.productList[0]);
     //   widget.searchUserJourney?.setSuccess();
     //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-    // } else if (widget.isAddToCart == true && widget.productList!.length > 1) {
+    // } else if (widget.isAddToCart == true && productQtyMap.length > 1) {
     //   widget.searchUserJourney?.setNeedDisambiguation();
     //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
     // } else {
@@ -96,20 +106,43 @@ class _SearchPageState extends State<SearchPage>
       productList.add(product);
     });
 
-    return (widget.searchProductMap == null)
-        ? Center(
-            child: CircularProgressIndicator(),
-          )
-        : Expanded(
-            child: ListView.builder(
-                itemCount: widget.searchProductMap == null
-                    ? 0
-                    : widget.searchProductMap!.length,
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                itemBuilder: (context, index) {
-                  return RetailItem((productList)[index]);
-                }),
-          );
+    if (widget.searchProductMap == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else if (widget.searchProductMap!.length == 0) {
+      return Expanded(
+        child: Center(
+          child: Text('No matching items found'),
+        ),
+      );
+    } else {
+      return Expanded(
+        child: ListView.builder(
+            itemCount: widget.searchProductMap == null
+                ? 0
+                : widget.searchProductMap!.length,
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            itemBuilder: (context, index) {
+              return RetailItem((productList)[index]);
+            }),
+      );
+    }
+
+    // return (widget.searchProductMap == null)
+    //     ? Center(
+    //         child: CircularProgressIndicator(),
+    //       )
+    //     : Expanded(
+    //         child: ListView.builder(
+    //             itemCount: widget.searchProductMap == null
+    //                 ? 0
+    //                 : widget.searchProductMap!.length,
+    //             padding: EdgeInsets.symmetric(horizontal: 12),
+    //             itemBuilder: (context, index) {
+    //               return RetailItem((productList)[index]);
+    //             }),
+    //       );
   }
 
   // manyItemsDetected(List<Product>? productList, SearchInfo? searchInfo) {
@@ -174,8 +207,12 @@ class _SearchPageState extends State<SearchPage>
     });
     setState(() {
       widget.searchProductMap = searchProductMap;
-      widget.searchUserJourney?.setSuccess();
-      widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      if (searchProductMap.length == 0) {
+        itemNotFound();
+      } else {
+        widget.searchUserJourney?.setSuccess();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      }
     });
   }
 
@@ -194,6 +231,11 @@ class _SearchPageState extends State<SearchPage>
     //   searchUserJourney.setItemNotFound();
     // }
     // return SearchAppState.ADD_TO_CART;
+  }
+
+  Future<void> itemNotFound() async {
+    widget.searchUserJourney?.setItemNotFound();
+    widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
   }
 
   @override

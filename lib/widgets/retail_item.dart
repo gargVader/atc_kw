@@ -126,6 +126,7 @@ class _RetailItemState extends State<RetailItem> {
                             ),
                             onPressed: () {
                               setState(() {
+                                CartBloc.instance.addToCart(product);
                                 widget._visible = false;
                               });
                             },

@@ -1,3 +1,4 @@
+import 'package:atc_kw/data.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'models/Product.dart';
@@ -47,6 +48,26 @@ class CartBloc {
     //   }
     // }
     // _cartItems.sink.add(items);
+  }
+
+  void emptyCart() {
+    _cartItems.sink.add(new Map<int, int>());
+  }
+
+  double get totalPrice{
+    double total = 0;
+    Map productQtyMap = _cartItems.value;
+    Map<int, Product>? productMap = Data.instance.allProductMap;
+
+    productQtyMap.entries.forEach((element) {
+      int productId = element.key;
+      int qty = element.value;
+      double price = productMap![productId]!.price;
+
+      total+= qty*price;
+    });
+
+    return total;
   }
 
   void dispose() {
