@@ -6,8 +6,6 @@ import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
-import '../cart_bloc.dart';
-
 class SearchPage extends StatefulWidget {
   Map<int, Product>? searchProductMap;
   final Map<int, Product>? allProductMap;
@@ -41,38 +39,6 @@ class _SearchPageState extends State<SearchPage>
     implements RetailAssistantAction, RetailAssistantLifeCycleObserver {
   SearchInfo? searchQuery;
 
-  void searchAction() {
-    if (widget.searchUserJourney == null) return;
-    if (widget.isAddToCart == false) {
-      widget.searchUserJourney?.setSuccess();
-      widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-    } else {
-      print('Add to cart');
-      widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-      // addToCartFlow();
-    }
-  }
-
-  addToCartFlow() {
-    // Map productQtyMap = CartBloc.instance.cartItems.value;
-    // Map<int, Product>? sea = this.widget.searchProductMap;
-    // String? searchItem = widget.searchInfo!.item?.description;
-    // String? itemSize = widget.searchInfo!.item?.size.toString();
-    //
-    // if (widget.isAddToCart == true && productQtyMap.length == 1) {
-    //   CartBloc.instance.addToCart()
-    //   // cartbloc.addToCart(widget.productList[0]);
-    //   widget.searchUserJourney?.setSuccess();
-    //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-    // } else if (widget.isAddToCart == true && productQtyMap.length > 1) {
-    //   widget.searchUserJourney?.setNeedDisambiguation();
-    //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-    // } else {
-    //   widget.searchUserJourney?.setFailure();
-    //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-    // }
-  }
-
   @override
   void initState() {
     searchAction();
@@ -98,12 +64,14 @@ class _SearchPageState extends State<SearchPage>
     );
   }
 
+  // Builds the listView that displays searchResults
   Widget _buildListView() {
-    List<Product> productList = [];
+    // Generate List because it is required by the ListView to build RetailItem
+    List<Product> searchProductList = [];
     widget.searchProductMap!.entries.forEach((element) {
       int productID = element.key;
       Product product = element.value;
-      productList.add(product);
+      searchProductList.add(product);
     });
 
     if (widget.searchProductMap == null) {
@@ -124,25 +92,10 @@ class _SearchPageState extends State<SearchPage>
                 : widget.searchProductMap!.length,
             padding: EdgeInsets.symmetric(horizontal: 12),
             itemBuilder: (context, index) {
-              return RetailItem((productList)[index]);
+              return RetailItem((searchProductList)[index]);
             }),
       );
     }
-
-    // return (widget.searchProductMap == null)
-    //     ? Center(
-    //         child: CircularProgressIndicator(),
-    //       )
-    //     : Expanded(
-    //         child: ListView.builder(
-    //             itemCount: widget.searchProductMap == null
-    //                 ? 0
-    //                 : widget.searchProductMap!.length,
-    //             padding: EdgeInsets.symmetric(horizontal: 12),
-    //             itemBuilder: (context, index) {
-    //               return RetailItem((productList)[index]);
-    //             }),
-    //       );
   }
 
   // manyItemsDetected(List<Product>? productList, SearchInfo? searchInfo) {
@@ -174,6 +127,7 @@ class _SearchPageState extends State<SearchPage>
     //     .where((product) =>
     //         product.name.toLowerCase().contains(query.toLowerCase().trim()))
     //     .toList();
+    // Search for the product
     Map<int, Product> searchProductMap = new Map();
     widget.allProductMap!.entries.forEach((element) {
       int productID = element.key;
@@ -190,37 +144,63 @@ class _SearchPageState extends State<SearchPage>
 
   // Search function for SearchPage used by Slang
   // Searches for query and updates searchProductMap
-  void initiateSearchForSlang(Map<int, Product>? allProductMap,
-      SearchInfo? searchInfo, SearchUserJourney searchUserJourney) {
-    String? searchItem = searchInfo!.item?.description;
-    String? itemSize = searchInfo.item?.size.toString();
-
-    Map<int, Product> searchProductMap = new Map();
-    widget.allProductMap!.entries.forEach((element) {
-      int productID = element.key;
-      Product product = element.value;
-      if (product.name
-          .toLowerCase()
-          .contains(searchItem!.toLowerCase().trim())) {
-        searchProductMap[productID] = product;
-      }
-    });
-    setState(() {
-      widget.searchProductMap = searchProductMap;
-      if (searchProductMap.length == 0) {
-        itemNotFound();
-      } else {
-        widget.searchUserJourney?.setSuccess();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-      }
-    });
-  }
+  // void initiateSearchForSlang(Map<int, Product>? allProductMap,
+  //     SearchInfo? searchInfo, SearchUserJourney searchUserJourney) {
+  //   print('Search initiated for slang');
+  //   String? searchItem = searchInfo!.item?.description;
+  //   String? itemSize = searchInfo.item?.size.toString();
+  //
+  //   Map<int, Product> searchProductMap = new Map();
+  //   widget.allProductMap!.entries.forEach((element) {
+  //     int productID = element.key;
+  //     Product product = element.value;
+  //     if (product.name
+  //         .toLowerCase()
+  //         .contains(searchItem!.toLowerCase().trim())) {
+  //       searchProductMap[productID] = product;
+  //     }
+  //   });
+  //   print('Setting app state');
+  //   setState(() {
+  //     widget.searchProductMap = searchProductMap;
+  //     if (searchProductMap.length == 0) {
+  //       itemNotFound();
+  //     } else {
+  //       widget.searchUserJourney?.setSuccess();
+  //       widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+  //     }
+  //   });
+  // }
 
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
-    initiateSearchForSlang(widget.allProductMap, searchInfo, searchUserJourney);
-    return SearchAppState.WAITING;
+    print('Search initiated for slang');
+    String? searchItem = searchInfo.item?.description;
+    String? itemSize = searchInfo.item?.size.toString();
+
+    initiateSearch(query: searchItem!);
+    print('Setting app state');
+
+    if (widget.searchProductMap == null) {
+      setState(() {
+        widget.searchUserJourney?.setFailure();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      });
+    } else if (widget.searchProductMap!.length == 0) {
+      setState(() {
+        widget.searchUserJourney?.setItemNotFound();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      });
+    } else {
+      setState(() {
+        widget.searchUserJourney?.setSuccess();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      });
+    }
+
+    // initiateSearchForSlang(widget.allProductMap, searchInfo, searchUserJourney);
+    return SearchAppState.SEARCH_RESULTS;
 
     // print(searchInfo.item?.description);
     // var items = manyItemsDetected(widget.allProductList, searchInfo);
@@ -236,6 +216,57 @@ class _SearchPageState extends State<SearchPage>
   Future<void> itemNotFound() async {
     widget.searchUserJourney?.setItemNotFound();
     widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+  }
+
+  void searchAction() {
+    if (widget.searchUserJourney == null) return;
+
+    if (widget.searchProductMap == null) {
+      setState(() {
+        widget.searchUserJourney?.setFailure();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      });
+    } else if (widget.searchProductMap!.length == 0) {
+      setState(() {
+        widget.searchUserJourney?.setItemNotFound();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      });
+    } else {
+      setState(() {
+        widget.searchUserJourney?.setSuccess();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+      });
+    }
+
+    // if (widget.isAddToCart == false) {
+    //   widget.searchUserJourney?.setSuccess();
+    //   widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    // } else {
+    //   print('Add to cart');
+    //   widget.searchUserJourney?.setSuccess();
+    //   widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //   // addToCartFlow();
+    // }
+  }
+
+  addToCartFlow() {
+    // Map productQtyMap = CartBloc.instance.cartItems.value;
+    // Map<int, Product>? sea = this.widget.searchProductMap;
+    // String? searchItem = widget.searchInfo!.item?.description;
+    // String? itemSize = widget.searchInfo!.item?.size.toString();
+    //
+    // if (widget.isAddToCart == true && productQtyMap.length == 1) {
+    //   CartBloc.instance.addToCart()
+    //   // cartbloc.addToCart(widget.productList[0]);
+    //   widget.searchUserJourney?.setSuccess();
+    //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    // } else if (widget.isAddToCart == true && productQtyMap.length > 1) {
+    //   widget.searchUserJourney?.setNeedDisambiguation();
+    //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    // } else {
+    //   widget.searchUserJourney?.setFailure();
+    //   widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    // }
   }
 
   @override

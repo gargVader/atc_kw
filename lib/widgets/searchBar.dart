@@ -28,46 +28,11 @@ class SearchBar extends StatelessWidget {
           textInputAction: TextInputAction.done,
           onSubmitted: (String text) {
             print('Submitted=' + text);
+            // When the text is submitted, there might be two cases:
+            // a. SearchBar is present in Home(): In this case, navigate to SearchPage()
+            // b. SearchBar is present in SearchPage()
             initiateSearch!(query: text);
           },
-        )
-
-        // TypeAheadFormField<Product>(
-        //   debounceDuration: Duration(milliseconds: 500),
-        //   suggestionsCallback: (String query) {
-        //
-        //     List<Product> productList = [];
-        //     allProductMap!.entries.forEach((element) {
-        //       int productID = element.key;
-        //       Product product = element.value;
-        //       productList.add(product);
-        //     });
-        //
-        //     return productList!
-        //         .where((product) =>
-        //             product.name.toLowerCase().contains(query.toString().trim()))
-        //         .toList();
-        //   },
-        //   itemBuilder: (context, Product? product) {
-        //     return ListTile(
-        //       title: Text(product!.name),
-        //     );
-        //   },
-        //   onSuggestionSelected: (Product? product) {
-        //     print('Selected');
-        //     textEditingController.text = product!.name;
-        //     initiateSearch!(query: product.name);
-        //   },
-        //   textFieldConfiguration: TextFieldConfiguration(
-        //       controller: textEditingController,
-        //       decoration: InputDecoration(
-        //         prefixIcon: Icon(Icons.search),
-        //         hintText: 'Search items',
-        //         fillColor: Colors.white,
-        //         filled: true,
-        //         border: InputBorder.none,
-        //       )),
-        // ),
-        );
+        ));
   }
 }

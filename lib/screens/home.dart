@@ -60,7 +60,7 @@ class _HomeState extends State<Home>
       Map<int, Product>? productMap) {
     List<Product> productList = [];
     _productMap!.entries.forEach((element) {
-      int productID = element.key;
+      int productId = element.key;
       Product product = element.value;
       productList.add(product);
     });
@@ -106,7 +106,7 @@ class _HomeState extends State<Home>
   }
 
   // initiateSearch that is called from (home -> SearchPage)
-  // Used in search bar
+  // Used in search bar. Triggered manually by user
   void initiateSearch({required String query, SearchInfo? searchInfo}) {
     Map<int, Product> searchProductMap = getSearchProductMapFromQuery(query);
     Get.to(SearchPage(
@@ -116,23 +116,7 @@ class _HomeState extends State<Home>
     ));
   }
 
-  Map<int, Product> getSearchProductMapFromQuery(String? query) {
-    Map<int, Product> searchProductMap = new Map();
-    _productMap!.entries.forEach((element) {
-      int productID = element.key;
-      Product product = element.value;
-      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
-        searchProductMap[productID] = product;
-      }
-    });
-    return searchProductMap;
-    // return (_productList as List<Product>)
-    //     .where((product) =>
-    //         product.name.toLowerCase().contains(query!.toLowerCase().trim()))
-    //     .toList();
-  }
-
-  // Initiated by Slang
+  // Triggered by Slang
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
@@ -144,17 +128,17 @@ class _HomeState extends State<Home>
     Map<int, Product> searchProductMap =
         getSearchProductMapFromQuery(searchItem);
     // if (searchProductMap.length != 0) {
-      Get.to(SearchPage.forSlang(
-        searchProductMap: searchProductMap,
-        allProductMap: _productMap,
-        searchTerm: searchItem,
-        searchUserJourney: searchUserJourney,
-        searchInfo: searchInfo,
-        isAddToCart: searchInfo.isAddToCart,
-      ));
-      if(searchProductMap.length==0){
-        itemNotFound();
-      }
+    Get.to(SearchPage.forSlang(
+      searchProductMap: searchProductMap,
+      allProductMap: _productMap,
+      searchTerm: searchItem,
+      searchUserJourney: searchUserJourney,
+      searchInfo: searchInfo,
+      isAddToCart: searchInfo.isAddToCart,
+    ));
+    if (searchProductMap.length == 0) {
+      itemNotFound();
+    }
     // } else {
     //   itemNotFound();
     // }
@@ -172,6 +156,18 @@ class _HomeState extends State<Home>
     SlangRetailAssistant.initialize(assistantConfig);
     SlangRetailAssistant.setAction(this);
     SlangRetailAssistant.setLifecycleObserver(this);
+  }
+
+  Map<int, Product> getSearchProductMapFromQuery(String? query) {
+    Map<int, Product> searchProductMap = new Map();
+    _productMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
+        searchProductMap[productID] = product;
+      }
+    });
+    return searchProductMap;
   }
 
   // bool? searchforItem(String? searchItem) {
