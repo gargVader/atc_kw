@@ -1,6 +1,7 @@
 import 'package:atc_kw/data.dart';
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
+import 'package:atc_kw/widgets/dummySearchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,9 +10,10 @@ class SearchDialog extends StatefulWidget {
   late List<String> productNameList;
   Map<int, Product>? allProductMap = Data.instance.allProductMap;
   SearchBarOnItemClickListener? onItemClickListener;
+  DummySearchBar dummySearchBar;
   TextEditingController controller = TextEditingController();
 
-  SearchDialog(this.initiateSearch) {
+  SearchDialog(this.initiateSearch, this.dummySearchBar) {
     productNameList = generateProductNameList(allProductMap, 50);
   }
 
@@ -65,7 +67,7 @@ class _SearchDialogState extends State<SearchDialog> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (String text) {
                   print('Submitted=' + text);
-                  widget.initiateSearch!(query: text);
+                  searchAction(text);
                 },
               )),
 
@@ -95,13 +97,7 @@ class _SearchDialogState extends State<SearchDialog> {
                 itemBuilder: (context, index) {
                   return ListTile(
                     onTap: () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                      } else {
-                        SystemNavigator.pop();
-                      }
-                      widget.onItemClickListener!
-                          .onSearchItemClick(widget.productNameList[index]);
+                      searchAction(widget.productNameList[index]);
                     },
                     title: Text(widget.productNameList[index]),
                   );
@@ -109,15 +105,27 @@ class _SearchDialogState extends State<SearchDialog> {
           );
   }
 
-  void notifyTextChanges(String text) {
+  void searchAction(String searchTerm) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      SystemNavigator.pop();
+    }
+    widget.onItemClickListener!
+        .onSearchItemClick(searchTerm);
+    setState(() {
+      // widget.dummySearchBar.
+    });
+  }
 
-    if((text.trim()).isEmpty){
+  void notifyTextChanges(String text) {
+    if ((text.trim()).isEmpty) {
       setState(() {
-        widget.productNameList = widget.generateProductNameList(widget.allProductMap, 50);
+        widget.productNameList =
+            widget.generateProductNameList(widget.allProductMap, 50);
       });
       return;
     }
-
     Map<int, Product> searchProductMap = Data.instance.getSearchProducts(text);
     List<String> productNameList = widget.generateProductNameList(
         searchProductMap, searchProductMap.length);

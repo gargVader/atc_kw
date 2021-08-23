@@ -14,9 +14,6 @@ class SearchBar extends StatelessWidget {
     required this.initiateSearch, required SearchDialog searchDialog,
   }) {
     allProductMap = Data.instance.allProductMap;
-    controller.addListener(() {
-      // searchDialog.searchDialogState.notifyTextChanges(controller.text);
-    });
   }
 
 

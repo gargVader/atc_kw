@@ -35,7 +35,7 @@ class DummySearchBar extends StatelessWidget implements SearchBarOnItemClickList
         ),
       ),
       onTap: () {
-        SearchDialog searchDialog = SearchDialog(initiateSearch);
+        SearchDialog searchDialog = SearchDialog(initiateSearch, this);
         searchDialog.setOnItemClickListener(this);
         Get.to(searchDialog);
       },
