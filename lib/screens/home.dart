@@ -77,7 +77,6 @@ class _HomeState extends State<Home>
           // Search Bar
           SearchBar(
             initiateSearch: initiateSearch,
-            allProductMap: _productMap,
           ),
           // ListView for products
           _buildListView(),
@@ -105,14 +104,10 @@ class _HomeState extends State<Home>
           );
   }
 
-  // initiateSearch that is called from (home -> SearchPage)
-  // Used in search bar. Triggered manually by user
-  void initiateSearch({required String query, SearchInfo? searchInfo}) {
-    Map<int, Product> searchProductMap = getSearchProductMapFromQuery(query);
+  void initiateSearch({required String query}) {
+    print('initiate search method called');
     Get.to(SearchPage(
       searchTerm: query,
-      searchProductMap: searchProductMap,
-      allProductMap: _productMap,
     ));
   }
 
@@ -121,27 +116,16 @@ class _HomeState extends State<Home>
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     _searchUserJourney = searchUserJourney;
-    String? searchItem = searchInfo.item?.description;
+    String? searchTerm = searchInfo.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
 
     // Initiate search for Slang
-    Map<int, Product> searchProductMap =
-        getSearchProductMapFromQuery(searchItem);
-    // if (searchProductMap.length != 0) {
-    Get.to(SearchPage.forSlang(
-      searchProductMap: searchProductMap,
-      allProductMap: _productMap,
-      searchTerm: searchItem,
+    Get.to(SearchPage(
+      searchTerm: searchTerm,
       searchUserJourney: searchUserJourney,
       searchInfo: searchInfo,
       isAddToCart: searchInfo.isAddToCart,
     ));
-    if (searchProductMap.length == 0) {
-      itemNotFound();
-    }
-    // } else {
-    //   itemNotFound();
-    // }
     return SearchAppState.WAITING;
   }
 
@@ -156,18 +140,6 @@ class _HomeState extends State<Home>
     SlangRetailAssistant.initialize(assistantConfig);
     SlangRetailAssistant.setAction(this);
     SlangRetailAssistant.setLifecycleObserver(this);
-  }
-
-  Map<int, Product> getSearchProductMapFromQuery(String? query) {
-    Map<int, Product> searchProductMap = new Map();
-    _productMap!.entries.forEach((element) {
-      int productID = element.key;
-      Product product = element.value;
-      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
-        searchProductMap[productID] = product;
-      }
-    });
-    return searchProductMap;
   }
 
   // bool? searchforItem(String? searchItem) {

@@ -6,6 +6,32 @@ class SlangLayer
         RetailAssistantAction,
         RetailAssistantLifeCycleObserver,
         RouteAware {
+
+  SlangLayer() {
+    initSlangRetailAssistant();
+
+  }
+
+  @override
+  SearchAppState onSearch(
+      SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
+    // TODO: implement onSearch
+    throw UnimplementedError();
+  }
+
+  void initSlangRetailAssistant() {
+    AssistantUIPosition assistantUIPosition = new AssistantUIPosition();
+    assistantUIPosition.isDraggable = true;
+    var assistantConfig = new AssistantConfiguration()
+      ..assistantId = "bf08dee83833499d9556af7874634ed0"
+      ..apiKey = "00aca65a68494054974680374b360fce"
+      ..uiPosition = assistantUIPosition;
+
+    SlangRetailAssistant.initialize(assistantConfig);
+    SlangRetailAssistant.setAction(this);
+    SlangRetailAssistant.setLifecycleObserver(this);
+  }
+
   @override
   void didPop() {
     // TODO: implement didPop
@@ -64,13 +90,6 @@ class SlangLayer
   @override
   void onOnboardingSuccess() {
     // TODO: implement onOnboardingSuccess
-  }
-
-  @override
-  SearchAppState onSearch(
-      SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
-    // TODO: implement onSearch
-    throw UnimplementedError();
   }
 
   @override

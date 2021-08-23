@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'models/Product.dart';
 
 /// Singleton class for fetching and caching data from JSON
-class Data{
+class Data {
 
   // (productId -> Product)
   static Map<int, Product>? _allProductMap;
@@ -13,9 +13,9 @@ class Data{
 
   // Private constructor
   Data._(){
-   getAllProducts().then((productMap) {
-     _allProductMap = productMap;
-   });
+    getAllProducts().then((productMap) {
+      _allProductMap = productMap;
+    });
   }
 
   Map<int, Product>? get allProductMap => _allProductMap;
@@ -30,6 +30,18 @@ class Data{
       productMap[id] = product;
     }
     return productMap;
+  }
+
+  Map<int, Product> getSearchProducts(String? query) {
+    Map<int, Product> searchProductMap = new Map();
+    _allProductMap!.entries.forEach((element) {
+      int productID = element.key;
+      Product product = element.value;
+      if (product.name.toLowerCase().contains(query!.toLowerCase().trim())) {
+        searchProductMap[productID] = product;
+      }
+    });
+    return searchProductMap;
   }
 
 

@@ -1,6 +1,8 @@
 import 'package:atc_kw/models/Product.dart';
 import 'package:flutter/material.dart';
 
+import '../data.dart';
+
 class SearchBar extends StatelessWidget {
   Function? initiateSearch;
   Map<int, Product>? allProductMap;
@@ -8,8 +10,9 @@ class SearchBar extends StatelessWidget {
 
   SearchBar({
     required this.initiateSearch,
-    required this.allProductMap,
-  });
+  }) {
+    allProductMap = Data.instance.allProductMap;
+  }
 
   @override
   Widget build(BuildContext context) {
