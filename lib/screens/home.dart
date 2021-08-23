@@ -2,6 +2,7 @@ import 'package:atc_kw/data.dart';
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/screens/searchpage.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
+import 'package:atc_kw/widgets/dummySearchBar.dart';
 import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:atc_kw/widgets/searchBar.dart';
@@ -75,9 +76,10 @@ class _HomeState extends State<Home>
       body: Column(
         children: [
           // Search Bar
-          SearchBar(
-            initiateSearch: initiateSearch,
-          ),
+          DummySearchBar(initiateSearch),
+          // SearchBar(
+          //   initiateSearch: initiateSearch,
+          // ),
           // ListView for products
           _buildListView(),
         ],

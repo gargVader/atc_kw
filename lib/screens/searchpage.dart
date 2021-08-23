@@ -1,9 +1,9 @@
 import 'package:atc_kw/data.dart';
 import 'package:atc_kw/models/Product.dart';
 import 'package:atc_kw/widgets/customappbar.dart';
+import 'package:atc_kw/widgets/dummySearchBar.dart';
 import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
-import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
@@ -46,9 +46,10 @@ class _SearchPageState extends State<SearchPage>
       appBar: customAppbar(context, "Search Items"),
       body: Column(
         children: [
-          SearchBar(
-            initiateSearch: initiateSearch,
-          ),
+          DummySearchBar(initiateSearch),
+          // SearchBar(
+          //   initiateSearch: initiateSearch,
+          // ),
           _buildListView(),
         ],
       ),

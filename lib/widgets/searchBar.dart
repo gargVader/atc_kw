@@ -1,18 +1,25 @@
 import 'package:atc_kw/models/Product.dart';
+import 'package:atc_kw/screens/searchDialog.dart';
 import 'package:flutter/material.dart';
 
 import '../data.dart';
 
+// This SearchBar is present in the SearchDialog
 class SearchBar extends StatelessWidget {
   Function? initiateSearch;
   Map<int, Product>? allProductMap;
   TextEditingController controller = TextEditingController();
 
   SearchBar({
-    required this.initiateSearch,
+    required this.initiateSearch, required SearchDialog searchDialog,
   }) {
     allProductMap = Data.instance.allProductMap;
+    controller.addListener(() {
+      // searchDialog.searchDialogState.notifyTextChanges(controller.text);
+    });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +27,7 @@ class SearchBar extends StatelessWidget {
         color: Theme.of(context).primaryColor,
         padding: EdgeInsets.all(15),
         child: TextField(
+          autofocus: true,
           controller: controller,
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.search),
@@ -31,9 +39,6 @@ class SearchBar extends StatelessWidget {
           textInputAction: TextInputAction.done,
           onSubmitted: (String text) {
             print('Submitted=' + text);
-            // When the text is submitted, there might be two cases:
-            // a. SearchBar is present in Home(): In this case, navigate to SearchPage()
-            // b. SearchBar is present in SearchPage()
             initiateSearch!(query: text);
           },
         ));
