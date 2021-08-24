@@ -99,7 +99,7 @@ class _HomeState extends State<Home>
         : Expanded(
             child: ListView.builder(
                 itemCount: _productMap == null ? 0 : _productMap!.length,
-                padding: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.only(left: 12, right: 12, top: 10),
                 itemBuilder: (context, index) {
                   return RetailItem(_productList[index]);
                 }),

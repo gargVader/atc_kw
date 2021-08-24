@@ -86,7 +86,7 @@ class _SearchPageState extends State<SearchPage>
             itemCount: widget.searchProductMap == null
                 ? 0
                 : widget.searchProductMap!.length,
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.only(left: 12, right: 12, top: 10),
             itemBuilder: (context, index) {
               return RetailItem((searchProductList)[index]);
             }),
