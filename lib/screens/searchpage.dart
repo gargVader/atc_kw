@@ -46,7 +46,7 @@ class _SearchPageState extends State<SearchPage>
       appBar: customAppbar(context, "Search Items"),
       body: Column(
         children: [
-          DummySearchBar(initiateSearch),
+          DummySearchBar(initiateSearch, displayTerm: widget.searchTerm),
           // SearchBar(
           //   initiateSearch: initiateSearch,
           // ),

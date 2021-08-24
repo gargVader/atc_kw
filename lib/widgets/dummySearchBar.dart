@@ -2,11 +2,25 @@ import 'package:atc_kw/screens/searchDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class DummySearchBar extends StatelessWidget implements SearchBarOnItemClickListener{
+class DummySearchBar extends StatefulWidget
+    implements SearchBarOnItemClickListener {
   Function? initiateSearch;
+  String initialdisplayTerm = "Search Items";
+  String? displayTerm = "Search Items";
 
-  DummySearchBar(this.initiateSearch);
+  DummySearchBar(this.initiateSearch, {this.displayTerm});
 
+  @override
+  _DummySearchBarState createState() => _DummySearchBarState();
+
+  @override
+  void onSearchItemClick(String searchTerm) {
+    print('onSearchItemClick');
+    initiateSearch!(query: searchTerm);
+  }
+}
+
+class _DummySearchBarState extends State<DummySearchBar> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -27,7 +41,9 @@ class DummySearchBar extends StatelessWidget implements SearchBarOnItemClickList
               Padding(
                   padding: EdgeInsets.only(left: 10),
                   child: Text(
-                    'Search items',
+                    (widget.displayTerm == null)
+                        ? '${widget.initialdisplayTerm}'
+                        : '${widget.displayTerm}',
                     style: TextStyle(color: Colors.grey),
                   ))
             ],
@@ -35,17 +51,10 @@ class DummySearchBar extends StatelessWidget implements SearchBarOnItemClickList
         ),
       ),
       onTap: () {
-        SearchDialog searchDialog = SearchDialog(initiateSearch, this);
-        searchDialog.setOnItemClickListener(this);
+        SearchDialog searchDialog = SearchDialog(widget.initiateSearch, widget);
+        searchDialog.setOnItemClickListener(widget);
         Get.to(searchDialog);
       },
     );
-  }
-
-  @override
-  void onSearchItemClick(String searchTerm) {
-    // TODO: implement onSearchItemClick
-    print('onSearchItemClick');
-    initiateSearch!(query: searchTerm);
   }
 }

@@ -114,7 +114,7 @@ class _SearchDialogState extends State<SearchDialog> {
     widget.onItemClickListener!
         .onSearchItemClick(searchTerm);
     setState(() {
-      // widget.dummySearchBar.
+      // widget.dummySearchBar.displayTerm = searchTerm;
     });
   }
 
