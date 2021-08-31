@@ -9,11 +9,14 @@ import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
 class SearchPage extends StatefulWidget {
   Map<int, Product>? searchProductMap;
-  late final Map<int, Product>? allProductMap;
+
+  // late final Map<int, Product>? allProductMap;
   String? searchTerm;
   SearchUserJourney? searchUserJourney;
   bool? isAddToCart;
   SearchInfo? searchInfo;
+  bool isCircularProgressActive = true;
+  List searchProductList = [];
 
   SearchPage({
     this.searchTerm,
@@ -21,7 +24,7 @@ class SearchPage extends StatefulWidget {
     this.searchInfo,
     this.searchUserJourney,
   }) {
-    allProductMap = Data.instance.allProductMap;
+    // allProductMap = Data.instance.allProductMap;
   }
 
   @override
@@ -60,21 +63,33 @@ class _SearchPageState extends State<SearchPage>
 
   // Builds the listView that displays searchResults
   Widget _buildListView() {
-    widget.searchProductMap =
-        Data.instance.getSearchProducts(widget.searchTerm);
-    // Generate List because it is required by the ListView to build RetailItem
-    List<Product> searchProductList = [];
-    widget.searchProductMap!.entries.forEach((element) {
-      int productID = element.key;
-      Product product = element.value;
-      searchProductList.add(product);
-    });
+    // setState(() {
+    //   widget.isCircularProgressActive = true;
+    // });
+    //
+    // Data.instance.getSearchProducts(widget.searchTerm).then((value) {
+    //   Map<int, Product> searchProductMap = value;
+    //   // Generate List because it is required by the ListView to build RetailItem
+    //   List<Product> searchProductList = [];
+    //   searchProductMap.entries.forEach((element) {
+    //     int productID = element.key;
+    //     Product product = element.value;
+    //     searchProductList.add(product);
+    //   });
+    //
+    //   setState(() {
+    //     widget.searchProductList = searchProductList;
+    //     widget.isCircularProgressActive = false;
+    //   });
+    // });
 
-    if (widget.searchProductMap == null) {
-      return Center(
-        child: CircularProgressIndicator(),
+    if (widget.isCircularProgressActive) {
+      return Expanded(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
-    } else if (widget.searchProductMap!.length == 0) {
+    } else if (widget.searchProductList.length == 0) {
       return Expanded(
         child: Center(
           child: Text('No matching items found'),
@@ -83,12 +98,10 @@ class _SearchPageState extends State<SearchPage>
     } else {
       return Expanded(
         child: ListView.builder(
-            itemCount: widget.searchProductMap == null
-                ? 0
-                : widget.searchProductMap!.length,
+            itemCount: widget.searchProductList.length,
             padding: EdgeInsets.only(left: 12, right: 12, top: 10),
             itemBuilder: (context, index) {
-              return RetailItem((searchProductList)[index]);
+              return RetailItem((widget.searchProductList)[index]);
             }),
       );
     }
@@ -97,24 +110,50 @@ class _SearchPageState extends State<SearchPage>
   // Updates the searchTerm and searchProductMap
   void initiateSearch({required String query}) {
     // Search for the product
-    Map<int, Product> searchProductMap = Data.instance.getSearchProducts(query);
+
+    // Data.instance.getSearchProducts(query).then((value) {
+    //   Map<int, Product> searchProductMap = value;
+    //   setState(() {
+    //     print('Updating searchProductMap');
+    //     widget.searchTerm = query;
+    //     widget.searchProductMap = searchProductMap;
+    //   });
+    // });
+
+    print('initiating search for searchPage');
     setState(() {
-      print('Updating searchProductMap');
+      widget.isCircularProgressActive = true;
       widget.searchTerm = query;
-      widget.searchProductMap = searchProductMap;
     });
-    searchAction();
+
+    Data.instance.getSearchProducts(widget.searchTerm).then((value) {
+      Map<int, Product> searchProductMap = value;
+      // Generate List because it is required by the ListView to build RetailItem
+      List<Product> searchProductList = [];
+      searchProductMap.entries.forEach((element) {
+        int productID = element.key;
+        Product product = element.value;
+        searchProductList.add(product);
+      });
+
+      setState(() {
+        widget.searchProductList = searchProductList;
+        print('isCircularProgressActive=false');
+        widget.isCircularProgressActive = false;
+      });
+      searchAction();
+    });
   }
 
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
-    print('Search initiated for slang');
     String? searchItem = searchInfo.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
+    print('Search initiated for slang ='+searchItem!);
     initiateSearch(query: searchItem!);
-    searchAction();
-    return SearchAppState.SEARCH_RESULTS;
+    // searchAction();
+    return SearchAppState.WAITING;
 
     // print(searchInfo.item?.description);
     // var items = manyItemsDetected(widget.allProductList, searchInfo);
@@ -131,12 +170,12 @@ class _SearchPageState extends State<SearchPage>
   void searchAction() {
     if (widget.searchUserJourney == null) return;
 
-    if (widget.searchProductMap == null) {
+    if (widget.searchProductList== null) {
       setState(() {
         widget.searchUserJourney?.setFailure();
         widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
       });
-    } else if (widget.searchProductMap!.length == 0) {
+    } else if (widget.searchProductList.length == 0) {
       setState(() {
         widget.searchUserJourney?.setItemNotFound();
         widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);

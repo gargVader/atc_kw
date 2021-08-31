@@ -7,6 +7,7 @@ class CartBloc {
   late final BehaviorSubject<Map> _cartItems;
   static CartBloc instance = new CartBloc._();
 
+  // private constructor
   CartBloc._() {
     // (productId -> quantity)
     _cartItems = BehaviorSubject<Map<int, int>>.seeded(new Map());

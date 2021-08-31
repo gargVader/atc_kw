@@ -6,16 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SearchDialog extends StatefulWidget {
+  // Function
   Function? initiateSearch;
   late List<String> productNameList;
-  Map<int, Product>? allProductMap = Data.instance.allProductMap;
+
+  // Map<int, Product>? allProductMap = Data.instance.allProductMap;
   SearchBarOnItemClickListener? onItemClickListener;
   DummySearchBar dummySearchBar;
+  bool isLinearProgressBarActive = true;
   TextEditingController controller = TextEditingController();
 
   SearchDialog(this.initiateSearch, this.dummySearchBar) {
-    productNameList = generateProductNameList(allProductMap, 50);
+    // productNameList = generateProductNameList(allProductMap, 50);
   }
+
+
 
   @override
   _SearchDialogState createState() => _SearchDialogState();
@@ -41,6 +46,13 @@ class SearchDialog extends StatefulWidget {
 }
 
 class _SearchDialogState extends State<SearchDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+    initProductNameList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,12 +96,8 @@ class _SearchDialogState extends State<SearchDialog> {
   }
 
   Widget _buildListView() {
-    return (widget.allProductMap == null)
-        ? Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          )
+    return (widget.isLinearProgressBarActive)
+        ? LinearProgressIndicator()
         : Expanded(
             child: ListView.builder(
                 itemCount: widget.productNameList.length,
@@ -111,26 +119,35 @@ class _SearchDialogState extends State<SearchDialog> {
     } else {
       SystemNavigator.pop();
     }
-    widget.onItemClickListener!
-        .onSearchItemClick(searchTerm);
+    widget.onItemClickListener!.onSearchItemClick(searchTerm);
     setState(() {
       // widget.dummySearchBar.displayTerm = searchTerm;
     });
   }
 
+  void initProductNameList(){
+    notifyTextChanges("");
+  }
+
   void notifyTextChanges(String text) {
-    if ((text.trim()).isEmpty) {
-      setState(() {
-        widget.productNameList =
-            widget.generateProductNameList(widget.allProductMap, 50);
-      });
-      return;
-    }
-    Map<int, Product> searchProductMap = Data.instance.getSearchProducts(text);
-    List<String> productNameList = widget.generateProductNameList(
-        searchProductMap, searchProductMap.length);
     setState(() {
-      widget.productNameList = productNameList;
+      widget.isLinearProgressBarActive = true;
+    });
+    // if ((text.trim()).isEmpty) {
+    //   setState(() {
+    //     widget.productNameList =
+    //         widget.generateProductNameList(widget.allProductMap, 50);
+    //   });
+    //   return;
+    // }
+    Data.instance.getSearchProducts(text).then((value) {
+      Map<int, Product> searchProductMap = value;
+      List<String> productNameList = widget.generateProductNameList(
+          searchProductMap, searchProductMap.length);
+      setState(() {
+        widget.productNameList = productNameList;
+        widget.isLinearProgressBarActive = false;
+      });
     });
   }
 }

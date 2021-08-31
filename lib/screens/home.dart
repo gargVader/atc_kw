@@ -5,7 +5,6 @@ import 'package:atc_kw/widgets/customappbar.dart';
 import 'package:atc_kw/widgets/dummySearchBar.dart';
 import 'package:atc_kw/widgets/fab_cart.dart';
 import 'package:atc_kw/widgets/retail_item.dart';
-import 'package:atc_kw/widgets/searchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
@@ -34,6 +33,7 @@ class _HomeState extends State<Home>
   // Boolean to signify loading of items in homepage
   bool _loading = true;
 
+
   // Init State
   @override
   void initState() {
@@ -57,17 +57,6 @@ class _HomeState extends State<Home>
     }
   }
 
-  List<Product> generateProductListFromProductMap(
-      Map<int, Product>? productMap) {
-    List<Product> productList = [];
-    _productMap!.entries.forEach((element) {
-      int productId = element.key;
-      Product product = element.value;
-      productList.add(product);
-    });
-    return productList;
-  }
-
   // Build func for Home screen
   @override
   Widget build(BuildContext context) {
@@ -88,6 +77,17 @@ class _HomeState extends State<Home>
       floatingActionButton: FabCart(),
     );
   }
+  List<Product> generateProductListFromProductMap(
+      Map<int, Product>? productMap) {
+    List<Product> productList = [];
+    _productMap!.entries.forEach((element) {
+      int productId = element.key;
+      Product product = element.value;
+      productList.add(product);
+    });
+    return productList;
+  }
+
 
   Widget _buildListView() {
     return (_productMap == null)
@@ -107,7 +107,7 @@ class _HomeState extends State<Home>
   }
 
   void initiateSearch({required String query}) {
-    print('initiate search method called');
+    print('initiate search method called from Home');
     Get.to(SearchPage(
       searchTerm: query,
     ));
