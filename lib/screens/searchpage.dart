@@ -7,6 +7,8 @@ import 'package:atc_kw/widgets/retail_item.dart';
 import 'package:flutter/material.dart';
 import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 
+import '../cart_bloc.dart';
+
 class SearchPage extends StatefulWidget {
   Map<int, Product>? searchProductMap;
 
@@ -150,8 +152,8 @@ class _SearchPageState extends State<SearchPage>
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     String? searchItem = searchInfo.item?.description;
     String? itemSize = searchInfo.item?.size.toString();
-    print('Search initiated for slang ='+searchItem!);
-    initiateSearch(query: searchItem!);
+    print('Search initiated for slang =' + searchItem!);
+    initiateSearch(query: searchItem);
     // searchAction();
     return SearchAppState.WAITING;
 
@@ -170,32 +172,57 @@ class _SearchPageState extends State<SearchPage>
   void searchAction() {
     if (widget.searchUserJourney == null) return;
 
-    if (widget.searchProductList== null) {
-      setState(() {
-        widget.searchUserJourney?.setFailure();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-      });
-    } else if (widget.searchProductList.length == 0) {
-      setState(() {
-        widget.searchUserJourney?.setItemNotFound();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-      });
-    } else {
-      setState(() {
-        widget.searchUserJourney?.setSuccess();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-      });
-    }
-
-    // if (widget.isAddToCart == false) {
-    //   widget.searchUserJourney?.setSuccess();
-    //   widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    // if (widget.searchProductList == null) {
+    //   setState(() {
+    //     widget.searchUserJourney?.setFailure();
+    //     widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //   });
+    // } else if (widget.searchProductList.length == 0) {
+    //   setState(() {
+    //     widget.searchUserJourney?.setItemNotFound();
+    //     widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //   });
     // } else {
-    //   print('Add to cart');
-    //   widget.searchUserJourney?.setSuccess();
-    //   widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
-    //   // addToCartFlow();
+    //   setState(() {
+    //     widget.searchUserJourney?.setSuccess();
+    //     widget.searchUserJourney?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //   });
     // }
+
+    if (widget.isAddToCart == false) {
+      if (widget.searchProductList == null) {
+        setState(() {
+          widget.searchUserJourney?.setFailure();
+          widget.searchUserJourney
+              ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+        });
+      } else if (widget.searchProductList.length == 0) {
+        setState(() {
+          widget.searchUserJourney?.setItemNotFound();
+          widget.searchUserJourney
+              ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+        });
+      } else {
+        setState(() {
+          widget.searchUserJourney?.setSuccess();
+          widget.searchUserJourney
+              ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+        });
+      }
+    } else {
+      print('Add to cart');
+      if (widget.searchProductList.length == 1) {
+        CartBloc.instance.addToCart(widget.searchProductList[0]);
+        widget.searchUserJourney?.setSuccess();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+      } else if (widget.searchProductList.length > 1) {
+        widget.searchUserJourney?.setNeedDisambiguation();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+      } else {
+        widget.searchUserJourney?.setFailure();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+      }
+    }
   }
 
   @override

@@ -4,3 +4,11 @@ const String DUMMY_TEXT =
 const String colorPrimary = "139A7A";
 const String colorFabIcon = "f0d765";
 const String colorAccent = "f0851a";
+
+const String reactiveSearchUrl =
+    "https://MpOef0UeK:5670ba86-e4c1-4477-9647-77a9b2fb54df@flutterslang-rzvfyuh-arc.searchbase.io/list/_reactivesearch";
+const String searchUrl = "https://6z27aL2HY:aaed9e03-dc92-44c5-8afc-47fd5f42276f@flutterslang-rzvfyuh-es.searchbase.io/list/_doc/_search";
+
+
+const String baseUrl =
+      "https://6z27aL2HY:aaed9e03-dc92-44c5-8afc-47fd5f42276f@flutterslang-rzvfyuh-es.searchbase.io/list/";

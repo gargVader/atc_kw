@@ -119,7 +119,8 @@ class _HomeState extends State<Home>
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     _searchUserJourney = searchUserJourney;
     String? searchTerm = searchInfo.item?.description;
-    String? itemSize = searchInfo.item?.size.toString();
+    Size? size = searchInfo.item?.size;
+    String? searchSize = size!.amount.toString()+size.unit.toString();
 
     // Initiate search for Slang
     Get.to(SearchPage(

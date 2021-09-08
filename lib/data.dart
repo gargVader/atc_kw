@@ -1,33 +1,15 @@
 import 'dart:convert';
 
+import 'package:atc_kw/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 import 'models/Product.dart';
 
 /// Singleton class for fetching and caching data from JSON
 class Data {
-  final String baseUrl =
-      "https://6z27aL2HY:aaed9e03-dc92-44c5-8afc-47fd5f42276f@flutterslang-rzvfyuh-es.searchbase.io/list/";
-
-  // "https://6z27aL2HY:aaed9e03-dc92-44c5-8afc-47fd5f42276f@flutterslang-rzvfyuh-es.searchbase.io/list/_search?q=**&_source_includes=@_index,brand,id,imageUrl,name,price,size,sizeInt,synonyms,unit&size=30";
-
   // (productId -> Product)
   static Map<int, Product>? _allProductMap;
   static Data instance = new Data._();
-
-  String getUrl(String searchTerm, int size) {
-
-    String url = baseUrl +
-        "_search?q=" +
-        "*" +
-        searchTerm +
-        "*" +
-        "&_source_includes=@_index,brand,id,imageUrl,name,price,size,sizeInt,synonyms,unit" +
-        "&size=" +
-        size.toString();
-    print(url);
-    return url;
-  }
 
   // Private constructor
   Data._() {
@@ -36,14 +18,13 @@ class Data {
     });
   }
 
-
   Map<int, Product>? get allProductMap => _allProductMap;
 
   Future<Map<int, Product>> getAllProducts() async {
-    var response = await http.get(Uri.parse(getUrl("", 1000)));
+    var response = await makeServerRequest();
+    // var response = await http.get(Uri.parse(getUrl("", 1000)));
+    print(response.body);
     var jsonData = await json.decode(response.body);
-    var hits = jsonData['hits'];
-    List hitsList = hits['hits'];
     Map<int, Product> productMap = _getProductMapFromJsonData(jsonData);
     return productMap;
 
@@ -70,13 +51,26 @@ class Data {
   //   return searchProductMap;
   // }
 
-  Future<Map<int, Product>> getSearchProducts(String? query) async{
-    var response = await http.get(Uri.parse(getUrl(query!, 30)));
+  Future<Map<int, Product>> getSearchProducts(String? query) async {
+    // var response = await http.get(Uri.parse(getUrl(query!, 30)));
+    var response = await makeServerRequest(searchTerm: query!);
     var jsonData = await json.decode(response.body);
-    var hits = jsonData['hits'];
-    List hitsList = hits['hits'];
     Map<int, Product> productMap = _getProductMapFromJsonData(jsonData);
     return productMap;
+  }
+
+  makeServerRequest(QueryType queryType, {String? searchTerm, int? sizeInt}) {
+    return http.post(
+      Uri.parse(searchUrl),
+      headers: <String, String>{
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: (queryType == QueryType.ALL_PRODUCTS)
+          ? _getBody(queryType)
+          : (queryType == QueryType.BY_NAME)
+              ? _getBody(queryType, searchTerm: searchTerm)
+              : _getBody(queryType, searchTerm: searchTerm, sizeInt: sizeInt),
+    );
   }
 
   Map<int, Product> _getProductMapFromJsonData(var jsonData) {
@@ -90,4 +84,49 @@ class Data {
     }
     return productMap;
   }
+
+  String getUrl(String searchTerm, int size) {
+    String url = baseUrl +
+        "_search?q=" +
+        "*" +
+        searchTerm +
+        "*" +
+        "&_source_includes=@_index,brand,id,imageUrl,name,price,size,sizeInt,synonyms,unit" +
+        "&size=" +
+        size.toString();
+    print(url);
+    return url;
+  }
+
+  _getBody(QueryType queryType, {String searchTerm = "", int sizeInt = 1}) {
+    switch (queryType) {
+      case QueryType.ALL_PRODUCTS:
+        return jsonEncode(<String, Object>{
+          "query": {"match_all": {}}
+        });
+      case QueryType.BY_NAME:
+        return jsonEncode(<String, Object>{
+          "query": {
+            "match": {"name": "$searchTerm"}
+          }
+        });
+      case QueryType.BY_NAME_SIZE:
+        return jsonEncode(<String, Object>{
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match": {"name": "$searchTerm"}
+                },
+                {
+                  "match": {"sizeInt": "$sizeInt"}
+                }
+              ]
+            }
+          }
+        });
+    }
+  }
 }
+
+enum QueryType { ALL_PRODUCTS, BY_NAME, BY_NAME_SIZE }

@@ -20,8 +20,6 @@ class SearchDialog extends StatefulWidget {
     // productNameList = generateProductNameList(allProductMap, 50);
   }
 
-
-
   @override
   _SearchDialogState createState() => _SearchDialogState();
 
