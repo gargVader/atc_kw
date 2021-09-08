@@ -10,7 +10,7 @@ import 'package:slang_retail_assistant/slang_retail_assistant.dart';
 import '../cart_bloc.dart';
 
 class SearchPage extends StatefulWidget {
-  Map<int, Product>? searchProductMap;
+  Map<int, Pair<Product, double>>? searchProductMap;
 
   // late final Map<int, Product>? allProductMap;
   String? searchTerm;
@@ -18,13 +18,13 @@ class SearchPage extends StatefulWidget {
   bool? isAddToCart;
   SearchInfo? searchInfo;
   bool isCircularProgressActive = true;
-  List searchProductList = [];
+  List<Product> searchProductList = [];
 
   SearchPage({
     this.searchTerm,
-    this.isAddToCart,
-    this.searchInfo,
-    this.searchUserJourney,
+    this.isAddToCart, // Slang specific
+    this.searchInfo, // Slang specific
+    this.searchUserJourney, // Slang specific
   }) {
     // allProductMap = Data.instance.allProductMap;
   }
@@ -129,17 +129,18 @@ class _SearchPageState extends State<SearchPage>
     });
 
     Data.instance.getSearchProducts(widget.searchTerm).then((value) {
-      Map<int, Product> searchProductMap = value;
+      Map<int, Pair<Product, double>> searchProductMap = value;
       // Generate List because it is required by the ListView to build RetailItem
       List<Product> searchProductList = [];
       searchProductMap.entries.forEach((element) {
         int productID = element.key;
-        Product product = element.value;
+        Product product = element.value.product;
         searchProductList.add(product);
       });
 
       setState(() {
         widget.searchProductList = searchProductList;
+        widget.searchProductMap = searchProductMap;
         print('isCircularProgressActive=false');
         widget.isCircularProgressActive = false;
       });
@@ -150,10 +151,27 @@ class _SearchPageState extends State<SearchPage>
   @override
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
+    setState(() {
+      widget.searchUserJourney = searchUserJourney;
+      widget.searchInfo = searchInfo;
+      widget.isAddToCart = searchInfo.isAddToCart;
+    });
+
     String? searchItem = searchInfo.item?.description;
-    String? itemSize = searchInfo.item?.size.toString();
-    print('Search initiated for slang =' + searchItem!);
-    initiateSearch(query: searchItem);
+    String? searchSize = searchInfo.item?.size.toString();
+    String? searchBrand = searchInfo.item?.brand.toString();
+
+    print('Search initiated for slang');
+
+    if (searchSize != "null") {
+      searchItem = searchItem! + " " + searchSize!;
+    }
+
+    if (searchBrand != "null") {
+      searchItem = searchItem! + " " + searchBrand!;
+    }
+
+    initiateSearch(query: searchItem!);
     // searchAction();
     return SearchAppState.WAITING;
 
@@ -189,7 +207,19 @@ class _SearchPageState extends State<SearchPage>
     //   });
     // }
 
-    if (widget.isAddToCart == false) {
+    if (widget.isAddToCart != null && widget.isAddToCart == true) {
+      print('isAddToCart');
+      if (widget.searchProductList.length == 1) {
+        CartBloc.instance.addToCart(widget.searchProductList[0].id);
+        widget.searchUserJourney?.setSuccess();
+        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+      } else {
+        // Multiple items exist
+
+
+
+      }
+    } else {
       if (widget.searchProductList == null) {
         setState(() {
           widget.searchUserJourney?.setFailure();
@@ -209,20 +239,42 @@ class _SearchPageState extends State<SearchPage>
               ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
         });
       }
-    } else {
-      print('Add to cart');
-      if (widget.searchProductList.length == 1) {
-        CartBloc.instance.addToCart(widget.searchProductList[0]);
-        widget.searchUserJourney?.setSuccess();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      } else if (widget.searchProductList.length > 1) {
-        widget.searchUserJourney?.setNeedDisambiguation();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      } else {
-        widget.searchUserJourney?.setFailure();
-        widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      }
     }
+
+    // if (true) {
+    //   if (widget.searchProductList == null) {
+    //     setState(() {
+    //       widget.searchUserJourney?.setFailure();
+    //       widget.searchUserJourney
+    //           ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //     });
+    //   } else if (widget.searchProductList.length == 0) {
+    //     setState(() {
+    //       widget.searchUserJourney?.setItemNotFound();
+    //       widget.searchUserJourney
+    //           ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //     });
+    //   } else {
+    //     setState(() {
+    //       widget.searchUserJourney?.setSuccess();
+    //       widget.searchUserJourney
+    //           ?.notifyAppState(SearchAppState.SEARCH_RESULTS);
+    //     });
+    //   }
+    // } else {
+    //   print('Add to cart');
+    //   if (widget.searchProductList.length == 1) {
+    //     CartBloc.instance.addToCart(widget.searchProductList[0]);
+    //     widget.searchUserJourney?.setSuccess();
+    //     widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    //   } else if (widget.searchProductList.length > 1) {
+    //     widget.searchUserJourney?.setNeedDisambiguation();
+    //     widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    //   } else {
+    //     widget.searchUserJourney?.setFailure();
+    //     widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+    //   }
+    // }
   }
 
   @override

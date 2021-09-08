@@ -7,7 +7,7 @@ import '../data.dart';
 // This SearchBar is present in the SearchDialog
 class SearchBar extends StatelessWidget {
   Function? initiateSearch;
-  Map<int, Product>? allProductMap;
+  Map<int, Pair<Product, double>>? allProductMap;
   TextEditingController controller = TextEditingController();
 
   SearchBar({

@@ -60,7 +60,7 @@ class _ProductDetailState extends State<ProductDetail> {
                           backgroundColor: Theme.of(context).primaryColor,
                           child: IconButton(
                             onPressed: () {
-                              CartBloc.instance.addToCart(widget.product);
+                              CartBloc.instance.addToCart(widget.product.id);
                               // print(CartBloc.instance.cartItems.value);
                             },
                             icon: Icon(Icons.add),

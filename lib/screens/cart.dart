@@ -49,12 +49,12 @@ class Cart extends StatelessWidget {
                         if (snapshot.hasData) {
                           // (productId -> qty)
                           Map productQtyMap = snapshot.data;
-                          Map<int, Product>? productMap =
+                          Map<int, Pair<Product, double>>? productMap =
                               Data.instance.allProductMap;
                           productQtyMap.entries.forEach((element) {
                             int productId = element.key;
                             int qty = element.value;
-                            double price = productMap![productId]!.price;
+                            double price = productMap![productId]!.product.price;
                             total += qty * price;
                           });
                         }
@@ -109,7 +109,7 @@ class Cart extends StatelessWidget {
 
   Widget _buildListView(List productIdList) {
     // (productId -> Product)
-    Map<int, Product>? allProductMap = Data.instance.allProductMap;
+    Map<int, Pair<Product, double>>? allProductMap = Data.instance.allProductMap;
 
     return (productIdList == null)
         ? Center(
@@ -121,7 +121,7 @@ class Cart extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 itemBuilder: (context, index) {
                   int id = productIdList[index];
-                  return RetailItem(allProductMap![id]);
+                  return RetailItem(allProductMap![id]!.product);
                 }),
           );
   }

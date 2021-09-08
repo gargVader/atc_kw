@@ -25,14 +25,13 @@ class _HomeState extends State<Home>
         RetailAssistantLifeCycleObserver,
         RouteAware {
   SearchUserJourney? _searchUserJourney;
-  Map<int, Product>? _productMap;
+  Map<int, Pair<Product, double>>? _productMap;
 
   // List of products to be generated later
   late List<Product> _productList;
 
   // Boolean to signify loading of items in homepage
   bool _loading = true;
-
 
   // Init State
   @override
@@ -77,17 +76,17 @@ class _HomeState extends State<Home>
       floatingActionButton: FabCart(),
     );
   }
+
   List<Product> generateProductListFromProductMap(
-      Map<int, Product>? productMap) {
+      Map<int, Pair<Product, double>>? productMap) {
     List<Product> productList = [];
     _productMap!.entries.forEach((element) {
       int productId = element.key;
-      Product product = element.value;
+      Product product = element.value.product;
       productList.add(product);
     });
     return productList;
   }
-
 
   Widget _buildListView() {
     return (_productMap == null)
@@ -118,13 +117,22 @@ class _HomeState extends State<Home>
   SearchAppState onSearch(
       SearchInfo searchInfo, SearchUserJourney searchUserJourney) {
     _searchUserJourney = searchUserJourney;
-    String? searchTerm = searchInfo.item?.description;
-    Size? size = searchInfo.item?.size;
-    String? searchSize = size!.amount.toString()+size.unit.toString();
+    String? searchItem = searchInfo.item?.description;
+    String? searchSize = searchInfo.item?.size.toString();
+    String? searchBrand = searchInfo.item?.brand.toString();
+
+    print('Search initiated for slang');
+    if (searchSize != "null") {
+      searchItem = searchItem! + " " + searchSize!;
+    }
+
+    if (searchBrand != "null") {
+      searchItem = searchItem! + " " + searchBrand!;
+    }
 
     // Initiate search for Slang
     Get.to(SearchPage(
-      searchTerm: searchTerm,
+      searchTerm: searchItem,
       searchUserJourney: searchUserJourney,
       searchInfo: searchInfo,
       isAddToCart: searchInfo.isAddToCart,

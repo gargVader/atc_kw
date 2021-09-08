@@ -15,9 +15,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String primaryColorHex = "139A7A";
-    String colorFabIcon = "f0d765";
-    String colorAccent = "f0851a";
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: Home(),

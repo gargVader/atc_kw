@@ -28,13 +28,15 @@ class SearchDialog extends StatefulWidget {
     this.onItemClickListener = onItemClickListener;
   }
 
+  // For suggestions list
   List<String> generateProductNameList(
-      Map<int, Product>? productMap, int limit) {
+      Map<int, Pair<Product, double>>? productMap, int limit) {
     Set<String> nameSet = Set();
     int i = 0;
+
     for (MapEntry element in productMap!.entries) {
       int productId = element.key;
-      Product product = element.value;
+      Product product = element.value.product;
       nameSet.add(product.name);
       if (i > limit) break;
       i++;
@@ -44,7 +46,6 @@ class SearchDialog extends StatefulWidget {
 }
 
 class _SearchDialogState extends State<SearchDialog> {
-
   @override
   void initState() {
     super.initState();
@@ -123,7 +124,7 @@ class _SearchDialogState extends State<SearchDialog> {
     });
   }
 
-  void initProductNameList(){
+  void initProductNameList() {
     notifyTextChanges("");
   }
 
@@ -139,7 +140,7 @@ class _SearchDialogState extends State<SearchDialog> {
     //   return;
     // }
     Data.instance.getSearchProducts(text).then((value) {
-      Map<int, Product> searchProductMap = value;
+      Map<int, Pair<Product, double>> searchProductMap = value;
       List<String> productNameList = widget.generateProductNameList(
           searchProductMap, searchProductMap.length);
       setState(() {

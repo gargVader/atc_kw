@@ -126,7 +126,7 @@ class _RetailItemState extends State<RetailItem> {
                             ),
                             onPressed: () {
                               setState(() {
-                                CartBloc.instance.addToCart(product);
+                                CartBloc.instance.addToCart(product.id);
                                 widget._visible = false;
                               });
                             },
@@ -140,7 +140,7 @@ class _RetailItemState extends State<RetailItem> {
                                         Theme.of(context).primaryColor,
                                     child: IconButton(
                                       onPressed: () {
-                                        CartBloc.instance.addToCart(product);
+                                        CartBloc.instance.addToCart(product.id);
                                         // print(CartBloc.instance.cartItems.value);
                                       },
                                       icon: Icon(Icons.add),

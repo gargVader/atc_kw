@@ -17,9 +17,8 @@ class CartBloc {
 
   Stream<Map> get cartStream => _cartItems.stream;
 
-  void addToCart(Product product) {
+  void addToCart(int id) {
     print('Adding to cart');
-    int id = product.id;
     // (productId -> qty )
     Map productMap = _cartItems.value;
     if (productMap[id] == null) {
@@ -58,12 +57,12 @@ class CartBloc {
   double get totalPrice{
     double total = 0;
     Map productQtyMap = _cartItems.value;
-    Map<int, Product>? productMap = Data.instance.allProductMap;
+    Map<int, Pair<Product, double>>? productMap = Data.instance.allProductMap;
 
     productQtyMap.entries.forEach((element) {
       int productId = element.key;
       int qty = element.value;
-      double price = productMap![productId]!.price;
+      double price = productMap![productId]!.product.price;
 
       total+= qty*price;
     });
