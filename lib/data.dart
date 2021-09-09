@@ -85,6 +85,7 @@ class Data {
   _getBody(String searchTerm) {
     if (searchTerm == "") {
       return jsonEncode(<String, Object>{
+        "size": 1100,
         "query": {"match_all": {}}
       });
     }

@@ -208,16 +208,49 @@ class _SearchPageState extends State<SearchPage>
     // }
 
     if (widget.isAddToCart != null && widget.isAddToCart == true) {
+    // if (false) {
       print('isAddToCart');
       if (widget.searchProductList.length == 1) {
         CartBloc.instance.addToCart(widget.searchProductList[0].id);
         widget.searchUserJourney?.setSuccess();
         widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
-      } else {
+      } else if (widget.searchProductMap!.length > 1) {
         // Multiple items exist
+        // Loop through the map
+        // Find the set of top products
 
+        Pair<Product, double> p = widget.searchProductMap!.values.elementAt(0);
+        double mxScore = p.score;
+        Product product = p.product;
+        int count = 0; // count of mxScore in my searchResults
 
+        for (var val in widget.searchProductMap!.values) {
+          double curr_score = val.score;
+          Product product = val.product;
+          if (curr_score != mxScore) {
+            break;
+          } else {
+            count++;
+          }
+        }
 
+        if (count > 3) {
+          // Require disambiguation
+          widget.searchUserJourney?.setNeedDisambiguation();
+          widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+        } else if (count == 3) {
+          // I know the product, but I donot know the size
+          widget.searchUserJourney?.setNeedItemQuantity();
+          widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+        } else if (count == 1) {
+          // I definitely know
+          CartBloc.instance.addToCart(widget.searchProductList[0].id);
+          widget.searchUserJourney?.setSuccess();
+          widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+        } else {
+          widget.searchUserJourney?.setNeedDisambiguation();
+          widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
+        }
       }
     } else {
       if (widget.searchProductList == null) {
