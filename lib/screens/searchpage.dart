@@ -186,6 +186,9 @@ class _SearchPageState extends State<SearchPage>
     // return SearchAppState.ADD_TO_CART;
   }
 
+  // TODO: (1) Check return of AppState & Condn from Cart Screen
+  // TODO: (2) Prepare SlangLayer.dart. Require Vishal's guidance here.
+
   // Sets AppSate and AppStateCondition for Slang
   void searchAction() {
     if (widget.searchUserJourney == null) return;
@@ -207,18 +210,22 @@ class _SearchPageState extends State<SearchPage>
     //   });
     // }
 
+    // Add to cart flow
     if (widget.isAddToCart != null && widget.isAddToCart == true) {
-    // if (false) {
       print('isAddToCart');
       if (widget.searchProductList.length == 1) {
+        // Search results produce only 1 item. Add it to cart.
         CartBloc.instance.addToCart(widget.searchProductList[0].id);
         widget.searchUserJourney?.setSuccess();
         widget.searchUserJourney?.notifyAppState(SearchAppState.ADD_TO_CART);
       } else if (widget.searchProductMap!.length > 1) {
-        // Multiple items exist
-        // Loop through the map
-        // Find the set of top products
-
+        // Search results produce multiple items
+        // Logic for multiple items:
+        // 1. Loop through the map
+        // 2. Find the count of top products (Num of products with score=maxScore)
+        // 3. If count=1 -> Add it to cart
+        //    If count=3 -> I know the item. But not the size (1/2/5 kg)
+        //    If count>3 -> Need disambiguation
         Pair<Product, double> p = widget.searchProductMap!.values.elementAt(0);
         double mxScore = p.score;
         Product product = p.product;
@@ -253,6 +260,7 @@ class _SearchPageState extends State<SearchPage>
         }
       }
     } else {
+      // Search flow
       if (widget.searchProductList == null) {
         setState(() {
           widget.searchUserJourney?.setFailure();
